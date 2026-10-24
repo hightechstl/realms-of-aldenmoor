@@ -17,6 +17,7 @@
     { id: 'shortcut-farm-west', name: 'Fence stile', label: 'Stile', verb: 'Climb over', x: 45, y: 35, level: 5, xp: 8, sides: [{ x: 44, y: 35 }, { x: 46, y: 35 }], successText: 'You climb over the fence stile.', markerColor: 0xa08b62 },
     { id: 'shortcut-farm-north', name: 'Fence gap', label: 'Gap', verb: 'Squeeze through', x: 50, y: 24, level: 10, xp: 10, sides: [{ x: 50, y: 23 }, { x: 50, y: 25 }], successText: 'You squeeze through the gap in the fence.', markerColor: 0xa08b62 },
     { id: 'shortcut-farm-south', name: 'Fence stile', label: 'Stile', verb: 'Climb over', x: 58, y: 47, level: 15, xp: 12, sides: [{ x: 58, y: 46 }, { x: 58, y: 48 }], successText: 'You climb over the fence stile.', markerColor: 0xa08b62 },
+    { id: 'shortcut-wastes-wall', name: 'Crumbled wall', label: 'Wall', verb: 'Climb over', x: 42, y: 10, level: 25, xp: 15, region: 'wastes', sides: [{ x: 41, y: 10 }, { x: 43, y: 10 }], successText: 'You scramble over the crumbled wall.', markerColor: 0x8a7a68 },
   ];
 
   // Index into OBSTACLES of the next obstacle that advances the current lap.
@@ -50,7 +51,7 @@
         x: shortcut.x,
         y: shortcut.y,
         tile: { x: shortcut.x, y: shortcut.y },
-        region: 'farm',
+        region: shortcut.region || 'farm',
         verb: shortcut.verb,
         displayName: shortcut.name,
         label: shortcut.label,

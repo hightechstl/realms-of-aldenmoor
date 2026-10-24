@@ -96,11 +96,25 @@
       : 'Finish Feeding the Village, then return to the Mine Foreman.';
   }
 
+  function beastWastesStatus(character) {
+    const stage = stageOf(character, 'beastWastes');
+    if (stage === 2) return 'Complete.';
+    if (stage === 1) {
+      return character.quests?.emberfangSlain
+        ? 'Return to Captain Wren at the fishing village.'
+        : 'Slay Emberfang in its lair at the far east of the Ashen Wastes, north-east of town.';
+    }
+    return stageOf(character, 'ironForDepths') === 2
+      ? 'Speak to Captain Wren at the fishing village.'
+      : 'Finish Iron for the Depths, then speak to Captain Wren.';
+  }
+
   const JOURNAL_QUESTS = [
     { key: 'firstErrand', name: 'First Errand', status: firstErrandStatus },
     { key: 'goblinTrouble', name: 'Goblin Trouble', status: goblinTroubleStatus },
     { key: 'feedingVillage', name: 'Feeding the Village', status: feedingVillageStatus },
     { key: 'ironForDepths', name: 'Iron for the Depths', status: ironForDepthsStatus },
+    { key: 'beastWastes', name: 'The Beast of the Wastes', status: beastWastesStatus },
   ];
 
   function createQuestJournal(character) {
@@ -354,7 +368,9 @@
 
     window.openDialogueInterface(
       node.displayName,
-      [{ text: 'The mine runs smooth thanks to you.' }],
+      [{ text: stageOf(character, 'beastWastes') === 2
+        ? 'The mine runs smooth thanks to you.'
+        : 'The mine runs smooth thanks to you. Captain Wren was asking after you again — something about trouble in the Wastes.' }],
       node,
       null,
       character,
@@ -428,14 +444,87 @@
       return;
     }
 
-    const text = stageOf(character, 'ironForDepths') === 2
-      ? 'The village eats well, the roads are safe, and the mine runs deep. Quite a season, friend.'
-      : 'The village eats well thanks to you. The foreman was asking after you, I think.';
-    window.openDialogueInterface(node.displayName, [{ text }], node, null, character);
+    if (stageOf(character, 'ironForDepths') !== 2) {
+      window.openDialogueInterface(
+        node.displayName,
+        [{ text: 'The village eats well thanks to you. The foreman was asking after you, I think.' }],
+        node,
+        null,
+        character,
+      );
+      return;
+    }
+
+    const beastStage = stageOf(character, 'beastWastes');
+    if (beastStage === 0) {
+      const lines = [{
+        text: 'One last trouble, and it is a monster: Emberfang, a fire-breathing wolf in the Ashen Wastes north-east of town. Its ash hounds raid my supply boats, and no crew will sail while it lives.',
+        onContinue: () => {
+          setStage(character, 'beastWastes', 1);
+          character.quests.emberfangSlain = false;
+          saveCharacter(character);
+          lines[1].text = 'Its lair sits at the far east of the Wastes. Bring bass, mind its fire breath, and there are 500 coins and combat training in it for you.';
+        },
+      }, { text: 'Will you face the beast?' }];
+      window.openDialogueInterface(node.displayName, lines, node, null, character);
+      return;
+    }
+    if (beastStage === 1) {
+      if (!character.quests.emberfangSlain) {
+        window.openDialogueInterface(
+          node.displayName,
+          [{ text: 'Emberfang still lives. Follow the east road out of town into the Ashen Wastes — its lair is at the far east edge. The crumbled wall on the west side is a shortcut, if you are nimble enough.' }],
+          node,
+          null,
+          character,
+        );
+        return;
+      }
+      if (coinRewardBlocked(character)) {
+        window.openDialogueInterface(
+          node.displayName,
+          [{ text: 'You faced the beast and lived — but make room in your backpack so I can pay you.' }],
+          node,
+          null,
+          character,
+        );
+        return;
+      }
+      if (addItem(character, 'coins', 500) !== 0) {
+        throw new Error('Quest reward could not fit in the backpack.');
+      }
+      addXp(character, 'attack', 250);
+      setStage(character, 'beastWastes', 2);
+      saveCharacter(character);
+      window.addGameMessage?.('Quest complete: The Beast of the Wastes — 500 coins and Attack experience.', 'gold');
+      window.openDialogueInterface(
+        node.displayName,
+        [{ text: 'The Wastes are quiet and my boats sail free again. Aldenmoor will sing of this, friend.' }],
+        node,
+        null,
+        character,
+      );
+      return;
+    }
+
+    window.openDialogueInterface(
+      node.displayName,
+      [{ text: 'The village eats well, the roads are safe, the mine runs deep, and the Wastes are quiet. Quite a season, friend.' }],
+      node,
+      null,
+      character,
+    );
   }
 
   function onMonsterKilled(character, monsterId) {
     if (!character?.quests) return;
+    if (monsterId === 'emberfang') {
+      if (character.quests.beastWastes !== 1 || character.quests.emberfangSlain) return;
+      character.quests.emberfangSlain = true;
+      saveCharacter(character);
+      window.addGameMessage?.('The Beast of the Wastes: Emberfang slain. Return to Captain Wren.');
+      return;
+    }
     if (character.quests.goblinTrouble !== 1) return;
     if (monsterId !== 'goblin' && monsterId !== 'hobgoblin') return;
     const kills = Math.min(5, (character.quests.goblinKills ?? 0) + 1);

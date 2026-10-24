@@ -152,6 +152,8 @@ function normalizeQuests(quests) {
     goblinKills: Number.isInteger(kills) && kills >= 0 && kills <= 5 ? kills : 0,
     feedingVillage: stageOf(quests?.feedingVillage),
     ironForDepths: stageOf(quests?.ironForDepths),
+    beastWastes: stageOf(quests?.beastWastes),
+    emberfangSlain: quests?.emberfangSlain === true,
   };
 }
 

@@ -96,6 +96,50 @@
       graphics.destroy();
     }
 
+    if (!scene.textures.exists('ash-hound')) {
+      const graphics = scene.make.graphics({ x: 0, y: 0, add: false });
+      graphics.fillStyle(0x201a17, 0.45);
+      graphics.fillEllipse(16, 30, 25, 7);
+      graphics.fillStyle(0x6f6a66, 1);
+      graphics.fillRoundedRect(6, 15, 19, 10, 4);
+      graphics.fillCircle(26, 13, 6);
+      graphics.fillTriangle(22, 9, 24, 3, 27, 8);
+      graphics.fillTriangle(28, 8, 31, 4, 30, 11);
+      graphics.fillTriangle(6, 16, 1, 10, 8, 12);
+      graphics.fillStyle(0x4c4743, 1);
+      graphics.fillRect(9, 24, 3, 6);
+      graphics.fillRect(21, 24, 3, 6);
+      graphics.fillStyle(0xd95436, 1);
+      graphics.fillCircle(27, 12, 1.2);
+      graphics.generateTexture('ash-hound', 32, 34);
+      graphics.destroy();
+    }
+
+    if (!scene.textures.exists('emberfang')) {
+      const graphics = scene.make.graphics({ x: 0, y: 0, add: false });
+      graphics.fillStyle(0x180f0c, 0.5);
+      graphics.fillEllipse(16, 31, 28, 8);
+      graphics.fillStyle(0xd96b3b, 1);
+      graphics.fillTriangle(8, 14, 12, 4, 15, 13);
+      graphics.fillTriangle(14, 13, 18, 2, 21, 12);
+      graphics.fillTriangle(20, 13, 25, 5, 25, 14);
+      graphics.fillStyle(0x3a3230, 1);
+      graphics.fillRoundedRect(4, 14, 22, 12, 5);
+      graphics.fillCircle(27, 12, 7);
+      graphics.fillTriangle(22, 8, 24, 1, 28, 7);
+      graphics.fillTriangle(29, 7, 32, 2, 31, 10);
+      graphics.fillTriangle(5, 15, 0, 8, 7, 11);
+      graphics.fillStyle(0x241f1e, 1);
+      graphics.fillRect(8, 25, 4, 7);
+      graphics.fillRect(21, 25, 4, 7);
+      graphics.fillStyle(0xffd166, 1);
+      graphics.fillCircle(28, 11, 1.5);
+      graphics.fillStyle(0xf7f0dc, 1);
+      graphics.fillTriangle(29, 16, 31, 16, 30, 19);
+      graphics.generateTexture('emberfang', 32, 36);
+      graphics.destroy();
+    }
+
     if (!scene.textures.exists('chicken')) {
       const graphics = scene.make.graphics({ x: 0, y: 0, add: false });
       graphics.fillStyle(0xeee4c9, 1);
@@ -164,6 +208,13 @@
       { x: 27, y: 16 },
       { x: 38, y: 17 },
     ].map((spawn, index) => createMonsterNode(scene, 'hobgoblin', `hobgoblin-${index + 1}`, spawn, 'Hobgoblin', 'hobgoblin'));
+    const ashHounds = [
+      { x: 48, y: 12 },
+      { x: 55, y: 6 },
+      { x: 61, y: 15 },
+      { x: 67, y: 11 },
+    ].map((spawn, index) => createMonsterNode(scene, 'ashHound', `ash-hound-${index + 1}`, spawn, 'Ash hound', 'ash-hound'));
+    const emberfang = createMonsterNode(scene, 'emberfang', 'emberfang', { x: 117, y: 83 }, 'Emberfang', 'emberfang');
     const chickens = [
       { x: 49, y: 29 }, { x: 54, y: 34 }, { x: 62, y: 38 }, { x: 65, y: 43 },
     ].map((spawn, index) => createMonsterNode(scene, 'chicken', `chicken-${index + 1}`, spawn, 'Chicken', 'chicken'));
@@ -180,14 +231,14 @@
       'Training target',
       'training-target',
     ));
-    return [...goblins, ...hobgoblins, ...chickens, ...cows, ...targets];
+    return [...goblins, ...hobgoblins, ...ashHounds, emberfang, ...chickens, ...cows, ...targets];
   }
 
   function createMonsterNode(scene, monsterId, id, spawn, displayName, texture) {
       const monster = MONSTERS[monsterId];
       const node = {
         id,
-        type: monsterId === 'goblin' || monsterId === 'hobgoblin' ? 'goblin'
+        type: ['goblin', 'hobgoblin', 'ashHound', 'emberfang'].includes(monsterId) ? 'goblin'
           : monsterId === 'trainingTarget' ? 'trainingTarget' : 'farmAnimal',
         monsterId,
         x: spawn.x,
@@ -203,10 +254,18 @@
         maxYield: 1,
         remaining: 1,
         alive: true,
+        attackCount: 0,
       };
+      if (monsterId === 'ashHound') {
+        node.wanderBounds = { minX: 44, maxX: 68, minY: 3, maxY: 21 };
+      }
+      if (monsterId === 'emberfang') {
+        node.wanderBounds = { minX: 111, maxX: 123, minY: 81, maxY: 87 };
+      }
       const worldX = node.x * 32 + 16;
       const worldY = node.y * 32 + 16;
       node.marker = scene.add.image(worldX, worldY, texture).setDepth(6);
+      if (monsterId === 'emberfang') node.marker.setScale(1.55);
       node.marker.setInteractive(new Phaser.Geom.Rectangle(-16, -16, 32, 32), Phaser.Geom.Rectangle.Contains);
       node.labelText = scene.add.text(worldX, worldY - 22, monster.name, {
         fontFamily: 'sans-serif',
@@ -229,7 +288,7 @@
         node.hpBarBackground = null;
         node.hpBarFill = null;
       }
-      if (monsterId === 'goblin' || monsterId === 'hobgoblin') {
+      if (monsterId === 'goblin' || monsterId === 'hobgoblin' || monsterId === 'ashHound') {
         node.wanderEvent = scene.time.addEvent({
           delay: Phaser.Math.Between(3000, 5000),
           loop: true,
@@ -337,12 +396,18 @@
     runCombatRound(scene);
   }
 
+  const RANGED_AMMO_BONUS = { bronzeArrow: 0, ironArrow: 1, steelArrow: 2 };
+
+  function rangedAmmoBonus(character) {
+    return RANGED_AMMO_BONUS[character?.equipment?.ammo?.itemId] ?? -1;
+  }
+
   function canUseRangedCombat(character) {
     const weaponId = character?.equipment?.weapon;
     const ammo = character?.equipment?.ammo;
     return Boolean(
       ITEMS[weaponId]?.equip?.rangedBonus
-      && ammo?.itemId === 'bronzeArrow'
+      && rangedAmmoBonus(character) >= 0
       && ammo.qty > 0,
     );
   }
@@ -426,7 +491,7 @@
         return;
       }
       const ammo = character.equipment.ammo;
-      if (!ammo || ammo.itemId !== 'bronzeArrow' || ammo.qty <= 0) {
+      if (!ammo || rangedAmmoBonus(character) < 0 || ammo.qty <= 0) {
         stopCombat(scene);
         scene.currentAction = null;
         scene.actionStarted = false;
@@ -448,7 +513,7 @@
       let damage = 0;
       const accuracyBonus = style === 'accurate' ? 2 : 0;
       if (Math.random() < combatHitChance(rangedLevel + rangedBonus + accuracyBonus, monster.defence)) {
-        damage = randomDamage(1 + Math.floor(rangedLevel / 5));
+        damage = randomDamage(1 + Math.floor(rangedLevel / 5) + rangedAmmoBonus(character));
       }
       showHitSplat(scene, target.marker, damage);
       if (damage > 0) {
@@ -602,6 +667,22 @@
       monsterNode.hpBarFill?.setPosition(worldX - 13, worldY - 32);
     }
 
+    function applyEmberfangBreath(scene, monsterNode, character) {
+      if (monsterNode.monsterId !== 'emberfang' || !monsterNode.alive || character.currentHp <= 0) return false;
+      monsterNode.attackCount = (monsterNode.attackCount || 0) + 1;
+      if (monsterNode.attackCount % 3 !== 0) return false;
+      const breathDamage = Phaser.Math.Between(2, 4);
+      window.addGameMessage?.('Emberfang rears back and breathes fire!');
+      showHitSplat(scene, scene.player, breathDamage);
+      character.currentHp = Math.max(0, character.currentHp - breathDamage);
+      refreshHealth(character);
+      if (character.currentHp <= 0) {
+        playerDied(scene, character);
+        return true;
+      }
+      return false;
+    }
+
     function attackPlayer(scene, monsterNode, character) {
       const monster = MONSTERS[monsterNode.monsterId];
       const defenceLevel = levelForXp(character.skills.defence.xp)
@@ -614,8 +695,12 @@
       if (damage > 0) {
         character.currentHp = Math.max(0, character.currentHp - damage);
         refreshHealth(character);
-        if (character.currentHp <= 0) playerDied(scene, character);
+        if (character.currentHp <= 0) {
+          playerDied(scene, character);
+          return;
+        }
       }
+      applyEmberfangBreath(scene, monsterNode, character);
     }
 
     const equipmentBonuses = window.getEquipBonuses?.(character) || {
@@ -670,6 +755,7 @@
         return;
       }
     }
+    if (applyEmberfangBreath(scene, goblin, character)) return;
     state.timer = scene.time.delayedCall(1500, () => runCombatRound(scene));
   }
 
@@ -686,6 +772,7 @@
     scene.tileInteractables.delete(scene.tileKey(goblin.tile));
     goblin.alive = false;
     goblin.hostile = false;
+    goblin.attackCount = 0;
     goblin.remaining = 0;
     goblin.marker.disableInteractive();
     goblin.marker.setVisible(false);
@@ -699,6 +786,7 @@
       goblin.remaining = 1;
       goblin.alive = true;
       goblin.hostile = false;
+      goblin.attackCount = 0;
       const campTiles = [];
       const bounds = goblin.wanderBounds || { minX: 26, maxX: 39, minY: 9, maxY: 20 };
       for (let y = bounds.minY; y <= bounds.maxY; y += 1) {

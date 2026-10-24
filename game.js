@@ -189,6 +189,26 @@
       }
       fill(61, 29, 64, 31, 'barn', true);
 
+      // Phase 4: the Ashen Wastes, a scorched frontier pocket in the
+      // north-east, reached by the east road or the crumbled-wall shortcut.
+      fill(43, 3, 68, 21, 'scorched');
+      fill(43, 2, 68, 2, 'rock', true);
+      fill(42, 3, 42, 21, 'rock', true);
+      fill(69, 3, 69, 21, 'rock', true);
+      fill(43, 22, 68, 22, 'rock', true);
+      fill(40, 16, 68, 16, 'dirt');
+      setTile(42, 10, 'rock', true);
+      setTile(55, 22, 'dirt');
+      setTile(56, 22, 'dirt');
+      setTile(46, 5, 'tree', true);
+      setTile(52, 7, 'tree', true);
+      setTile(60, 12, 'tree', true);
+      setTile(48, 19, 'tree', true);
+      setTile(67, 19, 'tree', true);
+      setTile(50, 13, 'rock', true);
+      setTile(58, 5, 'rock', true);
+      setTile(62, 20, 'rock', true);
+
       // Phase 3, Step 5: the coast road runs south past the lake to a
       // fishing village on the shore, with a boat out to a small island.
       fill(3, 36, 10, 46, 'tree', true);
@@ -236,6 +256,14 @@
       this.addBuilding(61, 29, 4, 3, 'BARN', 0x785334);
       this.addBuilding(26, 57, 4, 3, 'FISH MARKET', 0x7a5a38);
       this.addBuilding(14, 56, 3, 2, 'HUT', 0x8e5d36);
+      this.addBuilding(63, 4, 6, 4, 'EMBERFANG LAIR', 0x4a3436);
+      this.add.text(55 * TILE_SIZE, 19 * TILE_SIZE, 'THE ASHEN WASTES', {
+        fontFamily: 'sans-serif',
+        fontSize: '12px',
+        color: '#f5e7c7',
+        stroke: '#3f3a33',
+        strokeThickness: 3,
+      }).setOrigin(0.5);
       this.add.text(20 * TILE_SIZE, 17 * TILE_SIZE, 'TOWN SQUARE', {
         fontFamily: 'sans-serif',
         fontSize: '12px',
@@ -275,6 +303,11 @@
         { id: 'island-bass-spot', type: 'fishing', itemId: 'rawBass', skill: 'fishing', level: 30, xp: 80, x: 19, y: 76, region: 'coast', label: 'Fish' },
         { id: 'oak-3', type: 'oak', itemId: 'oakLogs', skill: 'woodcutting', level: 15, x: 11, y: 75, region: 'coast', label: 'Oak' },
         { id: 'oak-4', type: 'oak', itemId: 'oakLogs', skill: 'woodcutting', level: 15, x: 15, y: 77, region: 'coast', label: 'Oak' },
+        { id: 'coal-1', type: 'ore', itemId: 'coal', skill: 'mining', level: 30, xp: 50, x: 47, y: 8, region: 'wastes', label: 'Coal' },
+        { id: 'coal-2', type: 'ore', itemId: 'coal', skill: 'mining', level: 30, xp: 50, x: 53, y: 10, region: 'wastes', label: 'Coal' },
+        { id: 'coal-3', type: 'ore', itemId: 'coal', skill: 'mining', level: 30, xp: 50, x: 59, y: 18, region: 'wastes', label: 'Coal' },
+        { id: 'coal-4', type: 'ore', itemId: 'coal', skill: 'mining', level: 30, xp: 50, x: 66, y: 14, region: 'wastes', label: 'Coal' },
+        { id: 'coal-5', type: 'ore', itemId: 'coal', skill: 'mining', level: 30, xp: 50, x: 49, y: 15, region: 'wastes', label: 'Coal' },
         { id: 'village-boat', type: 'boat', x: 32, y: 70, region: 'village', label: 'Boat', displayName: 'Ferry boat', destX: 13, destY: 71, destName: 'the island', fare: 30, markerColor: 0xc49a5f },
         { id: 'island-boat', type: 'boat', x: 13, y: 69, region: 'coast', label: 'Boat', displayName: 'Ferry boat', destX: 32, destY: 69, destName: 'the fishing village', fare: 30, markerColor: 0xc49a5f },
       ].forEach((node) => {
@@ -297,7 +330,7 @@
           || node.type === 'trainingTarget'
         ) return;
         const color = node.type === 'ore'
-          ? (node.itemId === 'runeEssence' ? 0x9fd8e8 : node.itemId === 'copperOre' ? 0xb76b43 : 0x9aa5aa)
+          ? (node.itemId === 'runeEssence' ? 0x9fd8e8 : node.itemId === 'copperOre' ? 0xb76b43 : node.itemId === 'coal' ? 0x2b2b30 : 0x9aa5aa)
           : node.type === 'tree' || node.type === 'oak'
             ? (node.type === 'oak' ? 0x8a6a3d : 0x4b8c48)
             : node.type === 'fishing'
@@ -350,7 +383,7 @@
         const interactions = {
           ore: {
             verb: 'Mine',
-            displayName: node.displayName || (node.itemId === 'copperOre' ? 'Copper rock' : 'Tin rock'),
+            displayName: node.displayName || (node.itemId === 'copperOre' ? 'Copper rock' : node.itemId === 'coal' ? 'Coal rock' : 'Tin rock'),
           },
           tree: { verb: 'Chop', displayName: 'Tree' },
           oak: { verb: 'Chop', displayName: 'Oak tree' },
@@ -656,6 +689,27 @@
       }
 
       if (node.type === 'furnace') {
+        const hasSteelIngredients = countItem(currentCharacter, 'ironOre') >= 1
+          && countItem(currentCharacter, 'coal') >= 1;
+        if (hasSteelIngredients) {
+          if (levelForXp(currentCharacter.skills.smithing.xp) < 30) {
+            window.addGameMessage?.('You need a Smithing level of 30 to smelt steel.');
+            this.cancelNodeAction();
+            return;
+          }
+          if (canAddItem(currentCharacter, 'steelBar', 1) < 1) {
+            window.addGameMessage?.('Your inventory is too full.');
+            this.cancelNodeAction();
+            return;
+          }
+          removeItem(currentCharacter, 'ironOre', 1);
+          removeItem(currentCharacter, 'coal', 1);
+          addItem(currentCharacter, 'steelBar', 1);
+          const steelResult = addXp(currentCharacter, 'smithing', 17.5);
+          this.afterActionXp('smithing', steelResult);
+          this.scheduleNextAction();
+          return;
+        }
         const hasBronzeOres = countItem(currentCharacter, 'copperOre') >= 1
           && countItem(currentCharacter, 'tinOre') >= 1;
         if (!hasBronzeOres && countItem(currentCharacter, 'ironOre') >= 1) {
@@ -804,7 +858,7 @@
         node.remaining = node.maxYield;
         node.marker.setFillStyle(node.type === 'oak' ? 0x8a6a3d : 0x4b8c48);
         if (node.type === 'ore') {
-          node.marker.setFillStyle(node.itemId === 'runeEssence' ? 0x9fd8e8 : node.itemId === 'copperOre' ? 0xb76b43 : 0x9aa5aa);
+          node.marker.setFillStyle(node.itemId === 'runeEssence' ? 0x9fd8e8 : node.itemId === 'copperOre' ? 0xb76b43 : node.itemId === 'coal' ? 0x2b2b30 : 0x9aa5aa);
         }
         if (node.type === 'fishing') node.marker.setFillStyle(0x4b9fc0);
         node.marker.setAlpha(1);

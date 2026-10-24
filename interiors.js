@@ -64,9 +64,11 @@
           const border = x === room.x || x === room.x + room.width - 1
             || y === room.y || y === room.y + room.height - 1;
           const doorGap = y === room.y + room.height - 1 && x === room.doorX;
-          const floorTexture = roomId === 'chapel'
-            ? ((x + y) % 2 ? 'chapel-floor-a' : 'chapel-floor-b')
-            : ((x + y) % 2 ? 'interior-floor-a' : 'interior-floor-b');
+          const floorTexture = roomId === 'emberfangLair'
+            ? ((x + y) % 2 ? 'scorched-b' : 'scorched-a')
+            : roomId === 'chapel'
+              ? ((x + y) % 2 ? 'chapel-floor-a' : 'chapel-floor-b')
+              : ((x + y) % 2 ? 'interior-floor-a' : 'interior-floor-b');
           scene.grid[y][x] = border ? 'interior-wall' : floorTexture;
           scene.blocked[y][x] = border;
           if (doorGap) {
@@ -116,6 +118,8 @@
             ? 'Essence portal'
             : roomId === 'mineDepths'
               ? 'Mine ladder'
+            : roomId === 'emberfangLair'
+              ? 'Emberfang lair entrance'
             : `${roomId[0].toUpperCase()}${roomId.slice(1)} door`,
         range: 1,
         remaining: Infinity,
