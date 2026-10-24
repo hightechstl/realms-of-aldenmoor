@@ -316,6 +316,129 @@ function getCharacterSlots() {
   });
 }
 
+
+// ---- Save transfer: move the whole account between devices ----
+// The save lives in one browser's localStorage, so characters made on
+// a phone never reach the Mac on their own. Export turns the store
+// into one copy-paste code; import validates and sanitizes it through
+// the same normalizers the game itself uses before it is trusted.
+const SAVE_EXPORT_PREFIX = 'ALDENMOOR-SAVE:';
+
+function encodeSaveText(text) {
+  const bytes = new TextEncoder().encode(text);
+  let binary = '';
+  const CHUNK = 0x8000;
+  for (let offset = 0; offset < bytes.length; offset += CHUNK) {
+    binary += String.fromCharCode(...bytes.subarray(offset, offset + CHUNK));
+  }
+  return btoa(binary);
+}
+
+function decodeSaveText(code) {
+  const binary = atob(code);
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+function exportSaveCode() {
+  const store = loadSaveStore();
+  const payload = {
+    app: 'realms-of-aldenmoor',
+    kind: 'save',
+    version: 2,
+    exportedAt: new Date().toISOString(),
+    store: {
+      version: 2,
+      sharedBank: JSON.parse(JSON.stringify(store.sharedBank)),
+      slots: JSON.parse(JSON.stringify(store.slots)),
+      activeSlot: store.activeSlot,
+    },
+  };
+  return SAVE_EXPORT_PREFIX + encodeSaveText(JSON.stringify(payload));
+}
+
+function summarizeSaveStore(store) {
+  const characters = (store?.slots || []).filter(Boolean).map((slot) => ({
+    name: slot.name,
+    totalLevel: CHARACTER_SKILLS.reduce(
+      (sum, skill) => sum + levelForXp(slot.skills?.[skill]?.xp || 0),
+      0,
+    ),
+  }));
+  return { characters, bankStacks: (store?.sharedBank || []).length };
+}
+
+function sanitizeImportedSlot(slot) {
+  if (slot === null || slot === undefined) return null;
+  if (typeof slot !== 'object') throw new Error('That save has a damaged character slot.');
+  const name = typeof slot.name === 'string' ? slot.name.trim().slice(0, 24) : '';
+  if (!name) throw new Error('A character in that save has no name.');
+  if (!RACES[slot.raceId]) throw new Error(`"${name}" has an unknown race in that save.`);
+  if (!CLASSES[slot.classId]) throw new Error(`"${name}" has an unknown class in that save.`);
+  const skills = {};
+  CHARACTER_SKILLS.forEach((skill) => {
+    const xp = slot.skills?.[skill]?.xp;
+    skills[skill] = { xp: Number.isFinite(xp) && xp > 0 ? Math.floor(xp) : 0 };
+  });
+  if (skills.hitpoints.xp < xpForLevel(10)) skills.hitpoints.xp = xpForLevel(10);
+  const clean = {
+    name,
+    raceId: slot.raceId,
+    classId: slot.classId,
+    skills,
+    inventory: normalizeInventory(slot.inventory),
+    equipment: normalizeEquipment(slot.equipment),
+    combatStyle: normalizeCombatStyle(slot.combatStyle),
+    rangedStyle: normalizeRangedStyle(slot.rangedStyle),
+    quests: normalizeQuests(slot.quests),
+    starterCoinsGranted: slot.starterCoinsGranted === true,
+    saveVersion: 1,
+  };
+  if (Number.isFinite(slot.currentHp)) {
+    const maxHp = levelForXp(skills.hitpoints.xp);
+    clean.currentHp = Math.max(1, Math.min(maxHp, Math.floor(slot.currentHp)));
+  }
+  return clean;
+}
+
+function parseSaveCode(code) {
+  if (typeof code !== 'string' || !code.trim()) throw new Error('Paste a save code first.');
+  let text = code.trim();
+  if (text.startsWith(SAVE_EXPORT_PREFIX)) text = text.slice(SAVE_EXPORT_PREFIX.length);
+  text = text.replace(/\s+/g, '');
+  if (!text) throw new Error('That save code is empty.');
+  let payload;
+  try {
+    payload = JSON.parse(decodeSaveText(text));
+  } catch (cause) {
+    throw new Error('That does not look like an Aldenmoor save code.');
+  }
+  if (!payload || payload.app !== 'realms-of-aldenmoor' || !payload.store) {
+    throw new Error('That code is not a Realms of Aldenmoor save.');
+  }
+  if (!Array.isArray(payload.store.slots)) {
+    throw new Error('That save is missing its characters.');
+  }
+  return {
+    version: 2,
+    sharedBank: normalizeBank(payload.store.sharedBank),
+    slots: [0, 1, 2].map((index) => sanitizeImportedSlot(payload.store.slots[index] ?? null)),
+    activeSlot: null,
+  };
+}
+
+function importSaveCode(code) {
+  const clean = parseSaveCode(code);
+  saveStore = clean;
+  persistSaveStore();
+  return summarizeSaveStore(clean);
+}
+
+window.exportSaveCode = exportSaveCode;
+window.parseSaveCode = parseSaveCode;
+window.importSaveCode = importSaveCode;
+window.summarizeSaveStore = summarizeSaveStore;
+
 window.getCharacterSlots = getCharacterSlots;
 window.setActiveSlot = setActiveSlot;
 window.clearActiveSlot = clearActiveSlot;

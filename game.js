@@ -1619,6 +1619,17 @@
       });
       panel.append(back);
     }
+    if (!allowBack) {
+      const importJump = document.createElement('button');
+      importJump.type = 'button';
+      importJump.className = 'slot-delete';
+      importJump.textContent = 'Already playing on another device? Import your save';
+      importJump.addEventListener('click', () => {
+        overlay.remove();
+        showCharacterSelectScreen();
+      });
+      panel.append(importJump);
+    }
     overlay.append(panel);
     document.querySelector('#game').append(overlay);
 
@@ -1692,6 +1703,111 @@
     document.querySelector('#sidebar-footer').append(button);
   }
 
+  function buildSaveTransferSection() {
+    const section = document.createElement('div');
+    section.className = 'save-transfer';
+    const heading = document.createElement('h2');
+    heading.textContent = 'Save Transfer';
+    const note = document.createElement('p');
+    note.className = 'town-note';
+    note.textContent = 'Your heroes live in this browser. Export a save code here, then import it on another device to play the same heroes there.';
+    const row = document.createElement('div');
+    row.className = 'save-transfer-row';
+    const exportButton = document.createElement('button');
+    exportButton.type = 'button';
+    exportButton.className = 'begin-button save-transfer-button';
+    exportButton.textContent = 'Export save code';
+    const importButton = document.createElement('button');
+    importButton.type = 'button';
+    importButton.className = 'begin-button save-transfer-button';
+    importButton.textContent = 'Import a save code';
+    row.append(exportButton, importButton);
+    const body = document.createElement('div');
+    section.append(heading, note, row, body);
+
+    const showStatus = (text, isError) => {
+      body.querySelectorAll('.save-transfer-status, .creation-error').forEach((el) => el.remove());
+      const status = document.createElement('p');
+      status.className = isError ? 'creation-error' : 'save-transfer-status';
+      status.textContent = text;
+      body.append(status);
+    };
+
+    exportButton.addEventListener('click', () => {
+      body.replaceChildren();
+      const code = document.createElement('textarea');
+      code.className = 'save-code';
+      code.readOnly = true;
+      code.value = window.exportSaveCode();
+      code.setAttribute('aria-label', 'Your save code');
+      const copy = document.createElement('button');
+      copy.type = 'button';
+      copy.className = 'begin-button save-transfer-button';
+      copy.textContent = 'Copy code';
+      copy.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(code.value);
+          showStatus('Copied. Paste it into a note or a message to yourself, then import it on the other device.', false);
+        } catch (cause) {
+          code.focus();
+          code.select();
+          showStatus('Automatic copy did not work — the code is selected, copy it by hand.', false);
+        }
+      });
+      body.append(code, copy);
+      showStatus('Keep this code private: anyone with it can load your save.', false);
+    });
+
+    importButton.addEventListener('click', () => {
+      body.replaceChildren();
+      const code = document.createElement('textarea');
+      code.className = 'save-code';
+      code.placeholder = 'Paste a save code here';
+      code.setAttribute('aria-label', 'Save code to import');
+      const load = document.createElement('button');
+      load.type = 'button';
+      load.className = 'begin-button save-transfer-button';
+      load.textContent = 'Load this save';
+      load.addEventListener('click', () => {
+        body.querySelectorAll('.save-transfer-confirm').forEach((el) => el.remove());
+        let clean;
+        try {
+          clean = window.parseSaveCode(code.value);
+        } catch (error) {
+          showStatus(error.message, true);
+          return;
+        }
+        const summary = window.summarizeSaveStore(clean);
+        const confirmBox = document.createElement('div');
+        confirmBox.className = 'save-transfer-confirm';
+        const summaryText = document.createElement('p');
+        summaryText.className = 'town-note';
+        const names = summary.characters.map((c) => `${c.name} (total level ${c.totalLevel})`).join(', ');
+        summaryText.textContent = summary.characters.length
+          ? `This save holds: ${names}. Shared bank: ${summary.bankStacks} item stack(s). Importing REPLACES every character and the bank on THIS device.`
+          : 'This save holds no characters — importing it clears this device.';
+        const confirm = document.createElement('button');
+        confirm.type = 'button';
+        confirm.className = 'begin-button save-transfer-button';
+        confirm.textContent = 'Yes, replace my save';
+        confirm.addEventListener('click', () => {
+          window.importSaveCode(code.value);
+          window.location.reload();
+        });
+        const cancel = document.createElement('button');
+        cancel.type = 'button';
+        cancel.className = 'slot-delete';
+        cancel.textContent = 'Cancel';
+        cancel.addEventListener('click', () => confirmBox.remove());
+        confirmBox.append(summaryText, confirm, cancel);
+        body.append(confirmBox);
+      });
+      body.append(code, load);
+    });
+
+    return section;
+  }
+
   function showCharacterSelectScreen() {
     const overlay = document.createElement('section');
     overlay.className = 'creation-screen';
@@ -1707,6 +1823,7 @@
     const grid = document.createElement('div');
     grid.className = 'choice-grid';
     panel.append(heading, note, grid);
+    panel.append(buildSaveTransferSection());
     overlay.append(panel);
     document.querySelector('#game').append(overlay);
 
