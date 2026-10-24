@@ -143,6 +143,50 @@
       graphics.destroy();
     }
 
+    if (!scene.textures.exists('reef-lurker')) {
+      const graphics = scene.make.graphics({ x: 0, y: 0, add: false });
+      graphics.fillStyle(0x0e2a24, 0.45);
+      graphics.fillEllipse(16, 30, 25, 7);
+      graphics.fillStyle(0x3d8b74, 1);
+      graphics.fillRoundedRect(6, 15, 19, 10, 4);
+      graphics.fillCircle(26, 13, 6);
+      graphics.fillTriangle(10, 15, 6, 6, 14, 12);
+      graphics.fillTriangle(17, 14, 15, 5, 21, 11);
+      graphics.fillTriangle(6, 16, 1, 10, 8, 12);
+      graphics.fillStyle(0x2a6353, 1);
+      graphics.fillRect(9, 24, 3, 6);
+      graphics.fillRect(21, 24, 3, 6);
+      graphics.fillStyle(0xf2c94c, 1);
+      graphics.fillCircle(27, 12, 1.2);
+      graphics.generateTexture('reef-lurker', 32, 34);
+      graphics.destroy();
+    }
+
+    if (!scene.textures.exists('stormmaw')) {
+      const graphics = scene.make.graphics({ x: 0, y: 0, add: false });
+      graphics.fillStyle(0x0a1c2c, 0.5);
+      graphics.fillEllipse(16, 31, 28, 8);
+      graphics.fillStyle(0x8bd5e8, 1);
+      graphics.fillTriangle(8, 14, 12, 4, 15, 13);
+      graphics.fillTriangle(14, 13, 18, 2, 21, 12);
+      graphics.fillTriangle(20, 13, 25, 5, 25, 14);
+      graphics.fillStyle(0x2e6ea6, 1);
+      graphics.fillRoundedRect(4, 14, 22, 12, 5);
+      graphics.fillCircle(27, 12, 7);
+      graphics.fillTriangle(22, 8, 24, 1, 28, 7);
+      graphics.fillTriangle(29, 7, 32, 2, 31, 10);
+      graphics.fillTriangle(5, 15, 0, 8, 7, 11);
+      graphics.fillStyle(0x1d4e79, 1);
+      graphics.fillRect(8, 25, 4, 7);
+      graphics.fillRect(21, 25, 4, 7);
+      graphics.fillStyle(0xf7f0dc, 1);
+      graphics.fillCircle(28, 11, 1.5);
+      graphics.fillStyle(0xf7f0dc, 1);
+      graphics.fillTriangle(29, 16, 31, 16, 30, 19);
+      graphics.generateTexture('stormmaw', 32, 36);
+      graphics.destroy();
+    }
+
     if (!scene.textures.exists('chicken')) {
       const graphics = scene.make.graphics({ x: 0, y: 0, add: false });
       graphics.fillStyle(0xeee4c9, 1);
@@ -218,6 +262,13 @@
       { x: 67, y: 11 },
     ].map((spawn, index) => createMonsterNode(scene, 'ashHound', `ash-hound-${index + 1}`, spawn, 'Ash hound', 'ash-hound'));
     const emberfang = createMonsterNode(scene, 'emberfang', 'emberfang', { x: 117, y: 83 }, 'Emberfang', 'emberfang');
+    const reefLurkers = [
+      { x: 49, y: 76 },
+      { x: 52, y: 73 },
+      { x: 59, y: 77 },
+      { x: 65, y: 76 },
+    ].map((spawn, index) => createMonsterNode(scene, 'reefLurker', `reef-lurker-${index + 1}`, spawn, 'Reef lurker', 'reef-lurker'));
+    const stormmaw = createMonsterNode(scene, 'stormmaw', 'stormmaw', { x: 117, y: 103 }, 'Stormmaw', 'stormmaw');
     const chickens = [
       { x: 49, y: 29 }, { x: 54, y: 34 }, { x: 62, y: 38 }, { x: 65, y: 43 },
     ].map((spawn, index) => createMonsterNode(scene, 'chicken', `chicken-${index + 1}`, spawn, 'Chicken', 'chicken'));
@@ -234,14 +285,14 @@
       'Training target',
       'training-target',
     ));
-    return [...goblins, ...hobgoblins, ...ashHounds, emberfang, ...chickens, ...cows, ...targets];
+    return [...goblins, ...hobgoblins, ...ashHounds, emberfang, ...reefLurkers, stormmaw, ...chickens, ...cows, ...targets];
   }
 
   function createMonsterNode(scene, monsterId, id, spawn, displayName, texture) {
       const monster = MONSTERS[monsterId];
       const node = {
         id,
-        type: ['goblin', 'hobgoblin', 'ashHound', 'emberfang'].includes(monsterId) ? 'goblin'
+        type: ['goblin', 'hobgoblin', 'ashHound', 'emberfang', 'reefLurker', 'stormmaw'].includes(monsterId) ? 'goblin'
           : monsterId === 'trainingTarget' ? 'trainingTarget' : 'farmAnimal',
         monsterId,
         x: spawn.x,
@@ -265,10 +316,16 @@
       if (monsterId === 'emberfang') {
         node.wanderBounds = { minX: 111, maxX: 123, minY: 81, maxY: 87 };
       }
+      if (monsterId === 'reefLurker') {
+        node.wanderBounds = { minX: 46, maxX: 67, minY: 71, maxY: 80 };
+      }
+      if (monsterId === 'stormmaw') {
+        node.wanderBounds = { minX: 111, maxX: 123, minY: 101, maxY: 107 };
+      }
       const worldX = node.x * 32 + 16;
       const worldY = node.y * 32 + 16;
       node.marker = scene.add.image(worldX, worldY, texture).setDepth(6);
-      if (monsterId === 'emberfang') node.marker.setScale(1.55);
+      if (monsterId === 'emberfang' || monsterId === 'stormmaw') node.marker.setScale(1.55);
       node.marker.setInteractive(new Phaser.Geom.Rectangle(-16, -16, 32, 32), Phaser.Geom.Rectangle.Contains);
       node.labelText = scene.add.text(worldX, worldY - 22, monster.name, {
         fontFamily: 'sans-serif',
@@ -291,7 +348,7 @@
         node.hpBarBackground = null;
         node.hpBarFill = null;
       }
-      if (monsterId === 'goblin' || monsterId === 'hobgoblin' || monsterId === 'ashHound') {
+      if (monsterId === 'goblin' || monsterId === 'hobgoblin' || monsterId === 'ashHound' || monsterId === 'reefLurker') {
         node.wanderEvent = scene.time.addEvent({
           delay: Phaser.Math.Between(3000, 5000),
           loop: true,
@@ -399,7 +456,7 @@
     runCombatRound(scene);
   }
 
-  const RANGED_AMMO_BONUS = { bronzeArrow: 0, ironArrow: 1, steelArrow: 2 };
+  const RANGED_AMMO_BONUS = { bronzeArrow: 0, ironArrow: 1, steelArrow: 2, mithrilArrow: 3 };
 
   function rangedAmmoBonus(character) {
     return RANGED_AMMO_BONUS[character?.equipment?.ammo?.itemId] ?? -1;
@@ -691,6 +748,23 @@
       return false;
     }
 
+    function applyStormmawBreath(scene, monsterNode, character) {
+      if (monsterNode.monsterId !== 'stormmaw' || !monsterNode.alive || character.currentHp <= 0) return false;
+      monsterNode.attackCount = (monsterNode.attackCount || 0) + 1;
+      if (monsterNode.attackCount % 3 !== 0) return false;
+      const breathDamage = Phaser.Math.Between(3, 5);
+      window.sfx?.('splash');
+      window.addGameMessage?.('Stormmaw rears up and unleashes a crashing tempest wave!');
+      showHitSplat(scene, scene.player, breathDamage);
+      character.currentHp = Math.max(0, character.currentHp - breathDamage);
+      refreshHealth(character);
+      if (character.currentHp <= 0) {
+        playerDied(scene, character);
+        return true;
+      }
+      return false;
+    }
+
     function attackPlayer(scene, monsterNode, character) {
       const monster = MONSTERS[monsterNode.monsterId];
       const defenceLevel = levelForXp(character.skills.defence.xp)
@@ -710,6 +784,7 @@
         }
       }
       applyEmberfangBreath(scene, monsterNode, character);
+      applyStormmawBreath(scene, monsterNode, character);
     }
 
     const equipmentBonuses = window.getEquipBonuses?.(character) || {
@@ -767,6 +842,7 @@
       }
     }
     if (applyEmberfangBreath(scene, goblin, character)) return;
+    if (applyStormmawBreath(scene, goblin, character)) return;
     state.timer = scene.time.delayedCall(1500, () => runCombatRound(scene));
   }
 
@@ -778,7 +854,7 @@
 
   function killGoblin(scene, goblin, character) {
     stopCombat(scene);
-    window.sfx?.(goblin.monsterId === 'emberfang' ? 'bossdeath' : 'death');
+    window.sfx?.(goblin.monsterId === 'emberfang' || goblin.monsterId === 'stormmaw' ? 'bossdeath' : 'death');
     scene.currentAction = null;
     scene.actionStarted = false;
     scene.tileInteractables.delete(scene.tileKey(goblin.tile));

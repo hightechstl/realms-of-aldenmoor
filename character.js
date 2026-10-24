@@ -154,6 +154,8 @@ function normalizeQuests(quests) {
     ironForDepths: stageOf(quests?.ironForDepths),
     beastWastes: stageOf(quests?.beastWastes),
     emberfangSlain: quests?.emberfangSlain === true,
+    beneathWaves: stageOf(quests?.beneathWaves),
+    stormmawSlain: quests?.stormmawSlain === true,
   };
 }
 

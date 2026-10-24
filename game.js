@@ -224,6 +224,17 @@
       setTile(13, 70, 'dock');
       setTile(13, 71, 'dock');
 
+      // Phase 5: Stormcove Isle, a rocky storm-battered island in the
+      // south-east sea, reached by boat from the fishing village dock.
+      // A blocked rock ridge splits the isle; the cliff climb crosses it.
+      fill(43, 69, 67, 81, 'sand');
+      fill(46, 71, 64, 79, 'rock');
+      setTile(44, 74, 'dock');
+      setTile(44, 75, 'dock');
+      setTile(45, 74, 'dock');
+      setTile(45, 75, 'dock');
+      for (let y = 71; y <= 79; y += 1) setTile(55, y, 'rock', true);
+
       this.add.rectangle(
         WORLD_COLUMNS * TILE_SIZE / 2,
         WORLD_ROWS * TILE_SIZE / 2,
@@ -258,7 +269,15 @@
       this.addBuilding(26, 57, 4, 3, 'FISH MARKET', 0x7a5a38);
       this.addBuilding(14, 56, 3, 2, 'HUT', 0x8e5d36);
       this.addBuilding(63, 4, 6, 4, 'EMBERFANG LAIR', 0x4a3436);
+      this.addBuilding(58, 70, 6, 4, 'STORMMAW LAIR', 0x2e4a5a);
       this.add.text(55 * TILE_SIZE, 19 * TILE_SIZE, 'THE ASHEN WASTES', {
+        fontFamily: 'sans-serif',
+        fontSize: '12px',
+        color: '#f5e7c7',
+        stroke: '#3f3a33',
+        strokeThickness: 3,
+      }).setOrigin(0.5);
+      this.add.text(55 * TILE_SIZE, 82 * TILE_SIZE, 'STORMCOVE ISLE', {
         fontFamily: 'sans-serif',
         fontSize: '12px',
         color: '#f5e7c7',
@@ -311,6 +330,13 @@
         { id: 'coal-5', type: 'ore', itemId: 'coal', skill: 'mining', level: 30, xp: 50, x: 49, y: 15, region: 'wastes', label: 'Coal' },
         { id: 'village-boat', type: 'boat', x: 32, y: 70, region: 'village', label: 'Boat', displayName: 'Ferry boat', destX: 13, destY: 71, destName: 'the island', fare: 30, markerColor: 0xc49a5f },
         { id: 'island-boat', type: 'boat', x: 13, y: 69, region: 'coast', label: 'Boat', displayName: 'Ferry boat', destX: 32, destY: 69, destName: 'the fishing village', fare: 30, markerColor: 0xc49a5f },
+        { id: 'mithril-1', type: 'ore', itemId: 'mithrilOre', skill: 'mining', level: 45, xp: 80, x: 48, y: 72, region: 'stormcove', label: 'Mithril' },
+        { id: 'mithril-2', type: 'ore', itemId: 'mithrilOre', skill: 'mining', level: 45, xp: 80, x: 50, y: 79, region: 'stormcove', label: 'Mithril' },
+        { id: 'mithril-3', type: 'ore', itemId: 'mithrilOre', skill: 'mining', level: 45, xp: 80, x: 60, y: 76, region: 'stormcove', label: 'Mithril' },
+        { id: 'mithril-4', type: 'ore', itemId: 'mithrilOre', skill: 'mining', level: 45, xp: 80, x: 63, y: 79, region: 'stormcove', label: 'Mithril' },
+        { id: 'mithril-5', type: 'ore', itemId: 'mithrilOre', skill: 'mining', level: 45, xp: 80, x: 66, y: 73, region: 'stormcove', label: 'Mithril' },
+        { id: 'village-storm-boat', type: 'boat', x: 33, y: 70, region: 'village', label: 'Boat', displayName: 'Stormcove boat', destX: 44, destY: 74, destName: 'Stormcove Isle', fare: 50, markerColor: 0x4b9fc0 },
+        { id: 'stormcove-boat', type: 'boat', x: 43, y: 74, region: 'stormcove', label: 'Boat', displayName: 'Stormcove boat', destX: 33, destY: 69, destName: 'the fishing village', fare: 50, markerColor: 0x4b9fc0 },
       ].forEach((node) => {
         node.maxYield = node.type === 'ore' ? 1 : node.type === 'fishing' || node.type === 'furnace' || node.type === 'range' || node.type === 'banker' || node.type === 'shopkeeper' || node.type === 'altar' || node.type === 'boat'
           ? Infinity
@@ -399,7 +425,7 @@
         const interactions = {
           ore: {
             verb: 'Mine',
-            displayName: node.displayName || (node.itemId === 'copperOre' ? 'Copper rock' : node.itemId === 'coal' ? 'Coal rock' : 'Tin rock'),
+            displayName: node.displayName || (node.itemId === 'copperOre' ? 'Copper rock' : node.itemId === 'coal' ? 'Coal rock' : node.itemId === 'mithrilOre' ? 'Mithril rock' : 'Tin rock'),
           },
           tree: { verb: 'Chop', displayName: 'Tree' },
           oak: { verb: 'Chop', displayName: 'Oak tree' },
@@ -705,6 +731,28 @@
       }
 
       if (node.type === 'furnace') {
+        const hasMithrilIngredients = countItem(currentCharacter, 'mithrilOre') >= 1
+          && countItem(currentCharacter, 'coal') >= 2;
+        if (hasMithrilIngredients) {
+          if (levelForXp(currentCharacter.skills.smithing.xp) < 45) {
+            window.addGameMessage?.('You need a Smithing level of 45 to smelt mithril.');
+            this.cancelNodeAction();
+            return;
+          }
+          if (canAddItem(currentCharacter, 'mithrilBar', 1) < 1) {
+            window.addGameMessage?.('Your inventory is too full.');
+            this.cancelNodeAction();
+            return;
+          }
+          removeItem(currentCharacter, 'mithrilOre', 1);
+          removeItem(currentCharacter, 'coal', 2);
+          addItem(currentCharacter, 'mithrilBar', 1);
+          window.sfx?.('smith');
+          const mithrilResult = addXp(currentCharacter, 'smithing', 25);
+          this.afterActionXp('smithing', mithrilResult);
+          this.scheduleNextAction();
+          return;
+        }
         const hasSteelIngredients = countItem(currentCharacter, 'ironOre') >= 1
           && countItem(currentCharacter, 'coal') >= 1;
         if (hasSteelIngredients) {

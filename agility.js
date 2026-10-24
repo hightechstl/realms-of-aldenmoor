@@ -18,6 +18,7 @@
     { id: 'shortcut-farm-north', name: 'Fence gap', label: 'Gap', verb: 'Squeeze through', x: 50, y: 24, level: 10, xp: 10, sides: [{ x: 50, y: 23 }, { x: 50, y: 25 }], successText: 'You squeeze through the gap in the fence.', markerColor: 0xa08b62 },
     { id: 'shortcut-farm-south', name: 'Fence stile', label: 'Stile', verb: 'Climb over', x: 58, y: 47, level: 15, xp: 12, sides: [{ x: 58, y: 46 }, { x: 58, y: 48 }], successText: 'You climb over the fence stile.', markerColor: 0xa08b62 },
     { id: 'shortcut-wastes-wall', name: 'Crumbled wall', label: 'Wall', verb: 'Climb over', x: 42, y: 10, level: 25, xp: 15, region: 'wastes', sides: [{ x: 41, y: 10 }, { x: 43, y: 10 }], successText: 'You scramble over the crumbled wall.', markerColor: 0x8a7a68 },
+    { id: 'shortcut-stormcove-cliff', name: 'Cliff climb', label: 'Cliff', verb: 'Climb', x: 55, y: 75, level: 40, xp: 20, region: 'stormcove', sides: [{ x: 54, y: 75 }, { x: 56, y: 75 }], successText: 'You climb over the storm ridge.', markerColor: 0x6e8b8b },
   ];
 
   // Index into OBSTACLES of the next obstacle that advances the current lap.

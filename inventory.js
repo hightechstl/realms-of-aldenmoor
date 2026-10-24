@@ -88,6 +88,22 @@ function handleBackpackItemClick(character, index) {
     window.addGameMessage?.('You fletch 15 steel arrows.');
     return true;
   }
+  if (slot.itemId === 'mithrilArrowheads') {
+    if (countItem(character, 'arrowShafts') < 15 || countItem(character, 'mithrilArrowheads') < 15) {
+      window.addGameMessage?.('You need arrow shafts and mithril arrowheads to fletch arrows (15 each).');
+      return true;
+    }
+    removeItem(character, 'arrowShafts', 15);
+    removeItem(character, 'mithrilArrowheads', 15);
+    if (addItem(character, 'mithrilArrow', 15) !== 0) {
+      throw new Error('Could not add fletched arrows after consuming the required materials.');
+    }
+    const result = addXp(character, 'fletching', 30);
+    window.handleCombatXp?.('fletching', result, window.activePrayerScene?.());
+    window.sfx?.('craft');
+    window.addGameMessage?.('You fletch 15 mithril arrows.');
+    return true;
+  }
   return false;
 }
 

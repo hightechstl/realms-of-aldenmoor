@@ -109,12 +109,26 @@
       : 'Finish Iron for the Depths, then speak to Captain Wren.';
   }
 
+  function beneathWavesStatus(character) {
+    const stage = stageOf(character, 'beneathWaves');
+    if (stage === 2) return 'Complete.';
+    if (stage === 1) {
+      return character.quests?.stormmawSlain
+        ? 'Return to Captain Wren at the fishing village.'
+        : 'Slay Stormmaw in its sea-cave lair on Stormcove Isle, south-east across the sea.';
+    }
+    return stageOf(character, 'beastWastes') === 2
+      ? 'Speak to Captain Wren at the fishing village.'
+      : 'Finish The Beast of the Wastes, then speak to Captain Wren.';
+  }
+
   const JOURNAL_QUESTS = [
     { key: 'firstErrand', name: 'First Errand', status: firstErrandStatus, icon: ['item', 'parcel'] },
     { key: 'goblinTrouble', name: 'Goblin Trouble', status: goblinTroubleStatus, icon: ['skill', 'attack'] },
     { key: 'feedingVillage', name: 'Feeding the Village', status: feedingVillageStatus, icon: ['item', 'rawTrout'] },
     { key: 'ironForDepths', name: 'Iron for the Depths', status: ironForDepthsStatus, icon: ['item', 'ironBar'] },
     { key: 'beastWastes', name: 'The Beast of the Wastes', status: beastWastesStatus, icon: ['item', 'emberfangPelt'] },
+    { key: 'beneathWaves', name: 'The Beast Beneath the Waves', status: beneathWavesStatus, icon: ['item', 'leviathanScale'] },
   ];
 
   function createQuestJournal(character) {
@@ -529,9 +543,62 @@
       return;
     }
 
+    const wavesStage = stageOf(character, 'beneathWaves');
+    if (wavesStage === 0) {
+      const lines = [{
+        text: 'The Wastes are quiet, but the sea is not: Stormmaw, a leviathan older than this village, has risen off Stormcove Isle. It has smashed two boats, and no crew will sail east while it lives.',
+        onContinue: () => {
+          setStage(character, 'beneathWaves', 1);
+          character.quests.stormmawSlain = false;
+          saveCharacter(character);
+          lines[1].text = 'Take the Stormcove boat from my dock — 50 coins, and free for Tideborn, as always. Its lair is the sea cave on the north edge of the isle. There are 1,000 coins and hard combat training in it for you.';
+        },
+      }, { text: 'Will you face the beast beneath the waves?' }];
+      window.openDialogueInterface(node.displayName, lines, node, null, character);
+      return;
+    }
+    if (wavesStage === 1) {
+      if (!character.quests.stormmawSlain) {
+        window.openDialogueInterface(
+          node.displayName,
+          [{ text: 'Stormmaw still rules the waves. Take the Stormcove boat from the east side of my dock, follow the isle to the sea cave on its north edge, and mind its tempest breath.' }],
+          node,
+          null,
+          character,
+        );
+        return;
+      }
+      if (coinRewardBlocked(character)) {
+        window.openDialogueInterface(
+          node.displayName,
+          [{ text: 'You faced the leviathan and lived — but make room in your backpack so I can pay you.' }],
+          node,
+          null,
+          character,
+        );
+        return;
+      }
+      if (addItem(character, 'coins', 1000) !== 0) {
+        throw new Error('Quest reward could not fit in the backpack.');
+      }
+      addXp(character, 'attack', 400);
+      setStage(character, 'beneathWaves', 2);
+      saveCharacter(character);
+      window.sfx?.('quest');
+      window.addGameMessage?.('Quest complete: The Beast Beneath the Waves — 1,000 coins and Attack experience.', 'gold');
+      window.openDialogueInterface(
+        node.displayName,
+        [{ text: 'The sea is calm and every sail in Aldenmoor flies free again. A legend of two frontiers, that is what you are now.' }],
+        node,
+        null,
+        character,
+      );
+      return;
+    }
+
     window.openDialogueInterface(
       node.displayName,
-      [{ text: 'The village eats well, the roads are safe, the mine runs deep, and the Wastes are quiet. Quite a season, friend.' }],
+      [{ text: 'The village eats well, the roads are safe, the mine runs deep, the Wastes are quiet, and the waves are calm. Quite a season, friend.' }],
       node,
       null,
       character,
@@ -545,6 +612,13 @@
       character.quests.emberfangSlain = true;
       saveCharacter(character);
       window.addGameMessage?.('The Beast of the Wastes: Emberfang slain. Return to Captain Wren.');
+      return;
+    }
+    if (monsterId === 'stormmaw') {
+      if (character.quests.beneathWaves !== 1 || character.quests.stormmawSlain) return;
+      character.quests.stormmawSlain = true;
+      saveCharacter(character);
+      window.addGameMessage?.('The Beast Beneath the Waves: Stormmaw slain. Return to Captain Wren.');
       return;
     }
     if (character.quests.goblinTrouble !== 1) return;
