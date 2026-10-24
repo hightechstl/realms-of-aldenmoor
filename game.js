@@ -1115,11 +1115,15 @@
       let made = 0;
       while (countItem(character, barId) >= recipe.bars) {
         const yieldQty = recipe.yields ?? 1;
+        // Consume the bars first: the slots they free count toward the
+        // finished item, so a full backpack can't block a craft that
+        // removes more than it adds. Refunded if it still can't fit.
+        removeItem(character, barId, recipe.bars);
         if (canAddItem(character, itemId, yieldQty) < yieldQty) {
+          addItem(character, barId, recipe.bars);
           if (made === 0) window.addGameMessage?.('Your inventory is too full.');
           break;
         }
-        removeItem(character, barId, recipe.bars);
         if (addItem(character, itemId, yieldQty) > 0) {
           throw new Error(`Could not add crafted item ${itemId} after checking backpack capacity.`);
         }
