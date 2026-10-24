@@ -189,6 +189,23 @@
       label: 'Shopkeeper',
     });
 
+    const fishShop = rooms.fishShop;
+    nodes.push({
+      id: 'fishmonger',
+      type: 'shopkeeper',
+      x: fishShop.x + 6,
+      y: fishShop.y + 3,
+      tile: { x: fishShop.x + 6, y: fishShop.y + 3 },
+      region: 'fishShop',
+      verb: 'Trade',
+      displayName: 'Fishmonger',
+      shopId: 'fish',
+      range: 2,
+      remaining: Infinity,
+      maxYield: Infinity,
+      label: 'Fishmonger',
+    });
+
     const smithy = rooms.smithy;
     nodes.push(
       {
@@ -356,6 +373,41 @@
       : `You leave the ${room.name || node.roomId}.`);
   }
 
+  function sailBoat(scene, node, character) {
+    const destination = { x: node.destX, y: node.destY };
+    if (
+      destination.x < 0 || destination.y < 0
+      || destination.x >= scene.grid[0].length || destination.y >= scene.grid.length
+      || scene.blocked[destination.y][destination.x]
+    ) {
+      throw new Error(`Boat destination is not walkable: ${destination.x}, ${destination.y}`);
+    }
+    const fare = node.fare ?? 0;
+    const tideborn = character.raceId === 'tideborn';
+    if (!tideborn && fare > 0) {
+      if (countItem(character, 'coins') < fare) {
+        window.addGameMessage?.(`The boatman charges ${fare} coins for the crossing. You don't have enough.`);
+        scene.cancelNodeAction();
+        return;
+      }
+      removeItem(character, 'coins', fare);
+    }
+    scene.cancelNodeAction();
+    scene.path = [];
+    scene.moving = false;
+    scene.tweens.killTweensOf(scene.player);
+    scene.currentTile = destination;
+    scene.character.worldTile = { ...destination };
+    scene.player.setPosition(destination.x * 32 + 16, destination.y * 32 + 16);
+    scene.cameras.main.centerOn(scene.player.x, scene.player.y);
+    scene.cameras.main.startFollow(scene.player, true, 0.08, 0.08);
+    saveCharacter(scene.character);
+    window.addGameMessage?.(tideborn
+      ? `The boatman waves you aboard — Tideborn cross free. You sail to ${node.destName}.`
+      : `You pay ${fare} coins and sail to ${node.destName}.`);
+  }
+
   window.createInteriorWorld = createInteriorWorld;
   window.useInteriorDoor = teleport;
+  window.sailBoat = sailBoat;
 })();

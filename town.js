@@ -12,7 +12,7 @@
     activeCharacter = character;
     activeView = type === 'bank' ? 'bank' : 'shop';
     const shopName = activeView === 'shop'
-      ? activeNpc?.shopId === 'magic' ? 'Magic Shop' : 'General Store'
+      ? activeNpc?.shopId === 'magic' ? 'Magic Shop' : activeNpc?.shopId === 'fish' ? 'Fish Market' : 'General Store'
       : null;
     const sidebar = document.querySelector('#sidebar');
     const tabs = document.querySelector('.sidebar-tabs');
@@ -103,7 +103,7 @@
     title.textContent = activeView === 'dialogue'
       ? 'Dialogue'
       : activeView === 'shop'
-        ? activeNpc?.shopId === 'magic' ? 'Magic Shop' : 'General Store'
+        ? activeNpc?.shopId === 'magic' ? 'Magic Shop' : activeNpc?.shopId === 'fish' ? 'Fish Market' : 'General Store'
         : activeView === 'backpack' ? 'Backpack' : 'Bank';
     const close = document.createElement('button');
     close.type = 'button';

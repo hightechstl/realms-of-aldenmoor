@@ -47,6 +47,8 @@
         ['water-b', 0x3485aa, 0x4c9bb9],
         ['dock', 0x9c693b, 0xb47a42],
         ['tree', 0x428345, 0x64a94d],
+        ['sand-a', 0xd9c07a, 0xe6d194],
+        ['sand-b', 0xd2b56e, 0xdec084],
       ].forEach(([key, base, detail]) => {
         makeTexture(key, (graphics) => {
           graphics.fillStyle(base, 1);
@@ -127,7 +129,7 @@
     createWorld() {
       this.grid = Array.from({ length: WORLD_ROWS }, () => Array(WORLD_COLUMNS).fill('void'));
       this.blocked = Array.from({ length: WORLD_ROWS }, () => Array(WORLD_COLUMNS).fill(true));
-      for (let y = 0; y < 50; y += 1) {
+      for (let y = 0; y < 84; y += 1) {
         for (let x = 0; x < 70; x += 1) {
           this.grid[y][x] = 'grass';
           this.blocked[y][x] = false;
@@ -135,7 +137,7 @@
       }
 
       const setTile = (x, y, type, isBlocked = false) => {
-        if (x < 0 || y < 0 || x >= 70 || y >= 50) return;
+        if (x < 0 || y < 0 || x >= 70 || y >= 84) return;
         this.grid[y][x] = type;
         this.blocked[y][x] = isBlocked;
       };
@@ -187,6 +189,20 @@
       }
       fill(61, 29, 64, 31, 'barn', true);
 
+      // Phase 3, Step 5: the coast road runs south past the lake to a
+      // fishing village on the shore, with a boat out to a small island.
+      fill(3, 36, 10, 46, 'tree', true);
+      fill(30, 34, 38, 42, 'tree', true);
+      fill(12, 55, 36, 62, 'sand');
+      fill(19, 30, 20, 62, 'dirt');
+      fill(0, 63, 69, 64, 'sand');
+      fill(0, 65, 69, 83, 'water', true);
+      fill(32, 65, 33, 69, 'dock');
+      fill(8, 72, 18, 80, 'sand');
+      fill(10, 74, 16, 78, 'grass');
+      setTile(13, 70, 'dock');
+      setTile(13, 71, 'dock');
+
       this.add.rectangle(
         WORLD_COLUMNS * TILE_SIZE / 2,
         WORLD_ROWS * TILE_SIZE / 2,
@@ -194,7 +210,7 @@
         WORLD_ROWS * TILE_SIZE,
         0x050607,
       ).setDepth(-2);
-      this.add.tileSprite(0, 0, 70 * TILE_SIZE, 50 * TILE_SIZE, 'grass-a')
+      this.add.tileSprite(0, 0, 70 * TILE_SIZE, 84 * TILE_SIZE, 'grass-a')
         .setOrigin(0)
         .setDepth(-1);
 
@@ -218,6 +234,8 @@
       this.addBuilding(11, 8, 4, 3, 'WIZARD TOWER', 0x62568d);
       this.interiorNodes = window.createInteriorWorld?.(this) || [];
       this.addBuilding(61, 29, 4, 3, 'BARN', 0x785334);
+      this.addBuilding(26, 57, 4, 3, 'FISH MARKET', 0x7a5a38);
+      this.addBuilding(14, 56, 3, 2, 'HUT', 0x8e5d36);
       this.add.text(20 * TILE_SIZE, 17 * TILE_SIZE, 'TOWN SQUARE', {
         fontFamily: 'sans-serif',
         fontSize: '12px',
@@ -251,8 +269,16 @@
         { id: 'shrimp-spot', type: 'fishing', itemId: 'rawShrimp', skill: 'fishing', level: 1, x: 18, y: 24, region: 'coast', label: 'Fish' },
         { id: 'trout-spot', type: 'fishing', itemId: 'rawTrout', skill: 'fishing', level: 15, x: 21, y: 24, region: 'coast', label: 'Fish' },
         { id: 'range', type: 'range', x: 23, y: 18, region: 'town', label: 'Cook' },
+        { id: 'village-range', type: 'range', x: 30, y: 61, region: 'village', label: 'Cook' },
+        { id: 'sea-trout-spot', type: 'fishing', itemId: 'rawTrout', skill: 'fishing', level: 15, x: 31, y: 67, region: 'coast', label: 'Fish' },
+        { id: 'sea-bass-spot', type: 'fishing', itemId: 'rawBass', skill: 'fishing', level: 30, xp: 65, x: 34, y: 67, region: 'coast', label: 'Fish' },
+        { id: 'island-bass-spot', type: 'fishing', itemId: 'rawBass', skill: 'fishing', level: 30, xp: 80, x: 19, y: 76, region: 'coast', label: 'Fish' },
+        { id: 'oak-3', type: 'oak', itemId: 'oakLogs', skill: 'woodcutting', level: 15, x: 11, y: 75, region: 'coast', label: 'Oak' },
+        { id: 'oak-4', type: 'oak', itemId: 'oakLogs', skill: 'woodcutting', level: 15, x: 15, y: 77, region: 'coast', label: 'Oak' },
+        { id: 'village-boat', type: 'boat', x: 32, y: 70, region: 'village', label: 'Boat', displayName: 'Ferry boat', destX: 13, destY: 71, destName: 'the island', fare: 30, markerColor: 0xc49a5f },
+        { id: 'island-boat', type: 'boat', x: 13, y: 69, region: 'coast', label: 'Boat', displayName: 'Ferry boat', destX: 32, destY: 69, destName: 'the fishing village', fare: 30, markerColor: 0xc49a5f },
       ].forEach((node) => {
-        node.maxYield = node.type === 'ore' ? 1 : node.type === 'fishing' || node.type === 'furnace' || node.type === 'range' || node.type === 'banker' || node.type === 'shopkeeper' || node.type === 'altar'
+        node.maxYield = node.type === 'ore' ? 1 : node.type === 'fishing' || node.type === 'furnace' || node.type === 'range' || node.type === 'banker' || node.type === 'shopkeeper' || node.type === 'altar' || node.type === 'boat'
           ? Infinity
           : Phaser.Math.Between(3, 6);
         node.remaining = node.maxYield;
@@ -344,6 +370,7 @@
             verb: node.verb,
             displayName: node.displayName,
           },
+          boat: { verb: 'Sail', displayName: node.displayName || 'Ferry boat' },
           goblin: { verb: 'Attack', displayName: 'Goblin' },
           questNpc: { verb: 'Talk to', displayName: node.displayName },
         };
@@ -537,6 +564,10 @@
         window.useInteriorDoor?.(this, node);
         return;
       }
+      if (node.type === 'boat') {
+        window.sailBoat?.(this, node, currentCharacter);
+        return;
+      }
       if (node.type === 'banker' || node.type === 'shopkeeper') {
         this.cancelNodeAction();
         window.openTownInterface?.(
@@ -658,7 +689,7 @@
       }
 
       if (node.type === 'range') {
-        const rawFoodId = ['rawShrimp', 'rawTrout', 'rawChicken', 'rawBeef']
+        const rawFoodId = ['rawShrimp', 'rawTrout', 'rawChicken', 'rawBeef', 'rawBass']
           .find((itemId) => countItem(currentCharacter, itemId) > 0);
         if (!rawFoodId) {
           this.cancelNodeAction();
@@ -676,6 +707,7 @@
             rawTrout: 'cookedTrout',
             rawChicken: 'cookedChicken',
             rawBeef: 'cookedBeef',
+            rawBass: 'cookedBass',
           }[rawFoodId];
           addItem(currentCharacter, cookedId, 1);
           const baseXp = {
@@ -683,6 +715,7 @@
             rawTrout: 70,
             rawChicken: 30,
             rawBeef: 33,
+            rawBass: 80,
           }[rawFoodId];
           const result = addXp(currentCharacter, 'cooking', baseXp);
           this.afterActionXp('cooking', result);
@@ -743,7 +776,7 @@
           && !((countItem(currentCharacter, 'copperOre') >= 1 && countItem(currentCharacter, 'tinOre') >= 1)
             || countItem(currentCharacter, 'ironOre') >= 1))
         || (node.type === 'range'
-          && !['rawShrimp', 'rawTrout', 'rawChicken', 'rawBeef']
+          && !['rawShrimp', 'rawTrout', 'rawChicken', 'rawBeef', 'rawBass']
             .some((itemId) => countItem(currentCharacter, itemId) > 0))
         || (node.type === 'altar' && countItem(currentCharacter, 'bones') < 1)
       ) {

@@ -13,6 +13,11 @@
     [{ x: 22, y: 17 }, { x: 23, y: 18 }, { x: 22, y: 19 }, { x: 21, y: 18 }],
   ];
 
+  const VILLAGE_CITIZEN_WAYPOINTS = [
+    [{ x: 23, y: 61 }, { x: 31, y: 61 }, { x: 31, y: 60 }, { x: 23, y: 60 }],
+    [{ x: 14, y: 62 }, { x: 20, y: 62 }, { x: 20, y: 63 }, { x: 14, y: 63 }],
+  ];
+
   function createThievingNodes() {
     const nodes = STALL_POSITIONS.map(({ id, stallId, x, y, color }) => ({
       id,
@@ -54,6 +59,27 @@
         y: tile.y,
         tile: { ...tile },
         region: 'town',
+        verb: 'Pickpocket',
+        displayName: 'Citizen',
+        range: 1,
+        level: THIEVING_PICKPOCKET.level,
+        baseChance: THIEVING_PICKPOCKET.baseChance,
+        label: 'Citizen',
+        markerColor: 0x9b7544,
+        remaining: Infinity,
+        maxYield: Infinity,
+        waypoints,
+      });
+    });
+    VILLAGE_CITIZEN_WAYPOINTS.forEach((waypoints, index) => {
+      const tile = waypoints[0];
+      nodes.push({
+        id: `village-citizen-${index + 1}`,
+        type: 'citizen',
+        x: tile.x,
+        y: tile.y,
+        tile: { ...tile },
+        region: 'village',
         verb: 'Pickpocket',
         displayName: 'Citizen',
         range: 1,

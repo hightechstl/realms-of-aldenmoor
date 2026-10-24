@@ -87,6 +87,8 @@ const ITEMS = {
   rawTrout: { name: 'Raw trout', code: 'RT', color: 0x6e8b8b, sortOrder: 40 },
   cookedShrimp: { name: 'Shrimps', code: 'Sh', color: 0xd28c62, heals: 3, sortOrder: 50 },
   cookedTrout: { name: 'Trout', code: 'Tr', color: 0xc18c5e, heals: 7, sortOrder: 50 },
+  rawBass: { name: 'Raw bass', code: 'Ba', color: 0x7d8c5c, sortOrder: 40 },
+  cookedBass: { name: 'Bass', code: 'CB', color: 0xd8a860, heals: 8, sortOrder: 50 },
   bread: { name: 'Bread', code: 'Bd', color: 0xd7ad68, food: true, heals: 4, sortOrder: 50 },
   rawChicken: { name: 'Raw chicken', code: 'Rc', color: 0xb77958, sortOrder: 40 },
   cookedChicken: { name: 'Cooked chicken', code: 'Cc', color: 0xd49a63, heals: 4, sortOrder: 50 },
@@ -157,6 +159,8 @@ const ICONS = {
   rawTrout: ['............', '............', '............', '...KKKK.....', '..KRRRKK....', '.KRRHHRRK...', 'KRRRRRRRRK..', '.KRRHHRRK...', '..KRRRKK....', '...KKKK.....', '............', '............'],
   cookedShrimp: ['............', '............', '.......KK...', '.....KKFFK..', '....KFFFFK..', '...KFFFKK...', '..KFFK......', '..KFK.......', '.KK.........', 'K...........', '............', '............'],
   cookedTrout: ['............', '............', '............', '...KKKK.....', '..KFFFKK....', '.KFFAAFFK...', 'KFFFFFFFFK..', '.KFFAAFFK...', '..KFFFKK....', '...KKKK.....', '............', '............'],
+  rawBass: ['............', '............', '............', '...KKKK.....', '..KSSSKK....', '.KSGGSSSK...', 'KSSSSSSSSK..', '.KSGGSSSK...', '..KSSSKK....', '...KKKK.....', '............', '............'],
+  cookedBass: ['............', '............', '............', '...KKKK.....', '..KFFFKK....', '.KFAAAFFK...', 'KFFFFFFFFK..', '.KFAAAFFK...', '..KFFFKK....', '...KKKK.....', '............', '............'],
   burntFish: ['............', '....XX......', '..XX..XX....', '............', '...KKKK.....', '..KXXXKK....', '.KXXXXXXK...', 'KXXXXXXXXK..', '.KXXXXXXK...', '..KXXXKK....', '...KKKK.....', '............'],
   bread: ['............', '............', '....KKKK....', '..KKYYYYKK..', '.KYYYYYYYYK.', 'KYYYYYYYYYYK', 'KYYYYAYYYYYK', 'KYYAYYYYYYYK', '.KYYYYYYYYK.', '..KKKKKKKK..', '............', '............'],
   bones: ['............', '............', '..KK....KK..', '.KNKK..KNNK.', '.KNNKKKNNK..', '..KNNNNNK...', '...KNNNNKK..', '..KNNKKNNNK.', '.KNNK..KKNNK', '..KK....KK..', '............', '............'],
@@ -368,6 +372,8 @@ const SHOP_PRICES = {
   rawTrout: 15,
   cookedShrimp: 8,
   cookedTrout: 30,
+  rawBass: 25,
+  cookedBass: 55,
   rawChicken: 3,
   cookedChicken: 9,
   rawBeef: 4,
@@ -393,6 +399,10 @@ const SHOPS = {
     sells: { airRune: 4, mindRune: 4, staff: 60 },
     buys: { airRune: 2, mindRune: 2 },
   },
+  fish: {
+    sells: { bread: 12, cookedBass: 70 },
+    buys: { rawShrimp: 3, rawTrout: 15, rawBass: 25, cookedShrimp: 8, cookedTrout: 30, cookedBass: 55 },
+  },
 };
 
 const SHOP_BUY_PRICES = SHOPS.general.sells;
@@ -416,6 +426,7 @@ const INTERIOR_ROOMS = {
   tower: { x: 110, y: 130, width: 10, height: 8, doorX: 115, exterior: { x: 15, y: 10 } },
   essenceMine: { x: 110, y: 60, width: 12, height: 9, doorX: 115, exterior: { x: 112, y: 132 }, name: 'Essence Mine' },
   mineDepths: { x: 110, y: 140, width: 14, height: 9, doorX: 116, exterior: { x: 19, y: 1 }, name: 'Mine Depths' },
+  fishShop: { x: 110, y: 70, width: 12, height: 9, doorX: 115, exterior: { x: 27, y: 60 }, name: 'Fish Market' },
 };
 
 window.RACES = RACES;
