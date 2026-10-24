@@ -1054,9 +1054,9 @@
     backgroundColor: '#263b32',
     pixelArt: true,
     scale: {
-      mode: Phaser.Scale.FIT,
+      mode: Phaser.Scale.NONE,
       parent: 'game',
-      autoCenter: Phaser.Scale.CENTER_BOTH,
+      autoCenter: Phaser.Scale.NO_CENTER,
       width: 800,
       height: 600,
     },
