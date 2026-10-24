@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DreamGame</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: safe center;
+        overflow: hidden;
+        background: #171a22;
+      }
+
+      #layout {
+        display: flex;
+        width: 1060px;
+        height: 690px;
+        flex: 0 0 auto;
+        color: #e9e4d8;
+        font-family: system-ui, sans-serif;
+      }
+
+      #game-column {
+        display: flex;
+        flex: 0 0 800px;
+        flex-direction: column;
+        width: 800px;
+        height: 690px;
+      }
+
+      #game {
+        position: relative;
+        flex: 0 0 600px;
+        width: 800px;
+        height: 600px;
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+        background: #263b32;
+      }
+
+      .creation-screen {
+        position: absolute;
+        z-index: 5;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        padding: 20px;
+        overflow: auto;
+        background: rgb(15 20 25 / 88%);
+        color: #f4ead4;
+      }
+
+      .message-log {
+        display: flex;
+        flex: 0 0 90px;
+        flex-direction: column;
+        justify-content: flex-end;
+        width: 800px;
+        height: 90px;
+        padding: 8px 12px;
+        overflow-y: auto;
+        border-top: 1px solid #ffffff30;
+        background: rgb(15 20 25 / 88%);
+        color: #e9e4d8;
+        font: 12px/1.45 system-ui, sans-serif;
+      }
+
+      .message-log p {
+        flex: 0 0 auto;
+        margin: 2px 0;
+      }
+
+      #sidebar {
+        display: flex;
+        flex: 0 0 260px;
+        flex-direction: column;
+        width: 260px;
+        height: 690px;
+        border-left: 1px solid #41484f;
+        background: #1d2229;
+      }
+
+      #hp-hud {
+        flex: 0 0 auto;
+        padding: 9px 12px;
+        border-bottom: 1px solid #41484f;
+        background: #171c21;
+        color: #e9e4d8;
+        font: 600 12px system-ui, sans-serif;
+      }
+
+      #hp-bar {
+        height: 8px;
+        margin-top: 5px;
+        overflow: hidden;
+        border-radius: 5px;
+        background: #3b3030;
+      }
+
+      #hp-bar-fill {
+        width: 100%;
+        height: 100%;
+        border-radius: inherit;
+        background: #53bd65;
+        transition: width 120ms ease, background-color 120ms ease;
+      }
+
+      .sidebar-tabs {
+        display: grid;
+        flex: 0 0 48px;
+        grid-template-columns: repeat(5, 1fr);
+        border-bottom: 1px solid #41484f;
+      }
+
+      .sidebar-tab {
+        border: 0;
+        border-bottom: 3px solid transparent;
+        background: transparent;
+        color: #b9c0c3;
+        font: 600 14px system-ui, sans-serif;
+        cursor: pointer;
+      }
+
+      .sidebar-tab[aria-selected="true"] {
+        border-bottom-color: #f0c77f;
+        color: #f0c77f;
+      }
+
+      .sidebar-content {
+        position: relative;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+      }
+
+      .sidebar-content[hidden] {
+        display: none;
+      }
+
+      .equipment-hud {
+        padding: 12px;
+        color: #e9e4d8;
+        font: 12px/1.4 system-ui, sans-serif;
+      }
+
+      .equipment-slot {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        min-height: 58px;
+        margin-bottom: 7px;
+        padding: 6px 8px;
+        border: 1px solid #ffffff22;
+        border-radius: 4px;
+        background: #ffffff08;
+        color: #e9e4d8;
+        text-align: left;
+      }
+
+      button.equipment-slot {
+        cursor: pointer;
+      }
+
+      .equipment-slot-label {
+        flex: 0 0 56px;
+        color: #f0c77f;
+        font-weight: 700;
+      }
+
+      .equipment-slot .item-icon,
+      .equipment-empty-icon {
+        flex: 0 0 36px;
+        width: 36px;
+        height: 36px;
+      }
+
+      .equipment-empty-icon {
+        border: 1px dashed #77808a;
+        border-radius: 4px;
+        background: #1b2027;
+      }
+
+      .equipment-slot-name {
+        flex: 1 1 auto;
+      }
+
+      .equipment-bonuses {
+        margin-top: 12px;
+        padding-top: 9px;
+        border-top: 1px solid #ffffff24;
+        color: #f0d286;
+        font-weight: 600;
+      }
+
+      .spellbook-content {
+        padding: 12px;
+        color: #e9e4d8;
+        font: 12px/1.4 system-ui, sans-serif;
+      }
+
+      .spell-card {
+        display: grid;
+        gap: 7px;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ffffff24;
+        border-radius: 5px;
+        background: #ffffff08;
+        color: #e9e4d8;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .spell-card strong {
+        color: #f0c77f;
+      }
+
+      .spell-card.active {
+        border-color: #ffd166;
+        box-shadow: inset 0 0 0 1px #ffd166;
+      }
+
+      .spell-costs {
+        display: grid;
+        gap: 4px;
+      }
+
+      .spell-costs > span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .spell-costs .item-icon {
+        width: 24px;
+        height: 24px;
+      }
+
+      .town-panel {
+        flex: 1 1 auto;
+        min-height: 0;
+        padding: 12px;
+        overflow-y: auto;
+        color: #e9e4d8;
+        font: 12px/1.4 system-ui, sans-serif;
+      }
+
+      .town-panel-header,
+      .town-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .town-panel-header {
+        justify-content: space-between;
+        margin-bottom: 10px;
+        color: #f0c77f;
+        font-size: 15px;
+      }
+
+      .town-panel button {
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .town-close,
+      .town-action,
+      .town-subtabs button {
+        padding: 6px 9px;
+        border: 1px solid #ffffff30;
+        border-radius: 4px;
+        background: #30383e;
+      }
+
+      .town-close { color: #f0c77f !important; }
+
+      .town-action {
+        width: 100%;
+        margin: 0 0 9px;
+        border-color: #8d744e;
+        background: #51402e;
+      }
+
+      .town-subtabs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 5px;
+        margin-bottom: 10px;
+      }
+
+      .town-subtabs button[aria-selected="true"] {
+        border-color: #f0c77f;
+        color: #f0c77f;
+      }
+
+      .town-panel h3 {
+        margin: 14px 0 6px;
+        color: #f0c77f;
+        font-size: 12px;
+      }
+
+      .town-note {
+        margin: 6px 0 10px;
+        color: #c4cbc9;
+      }
+
+      .quest-entry {
+        padding: 10px;
+        border: 1px solid #ffffff20;
+        border-radius: 5px;
+        background: #ffffff08;
+      }
+
+      .quest-entry h3,
+      .dialogue-speaker {
+        margin: 0 0 8px;
+        color: #f0c77f;
+      }
+
+      .quest-status {
+        margin: 0;
+        color: #e9e4d8;
+      }
+
+      .quest-status.quest-complete {
+        color: #aab0ac;
+        text-decoration: line-through;
+      }
+
+      .dialogue-text {
+        min-height: 76px;
+        margin: 16px 0;
+        font-size: 14px;
+      }
+
+      .town-list {
+        display: grid;
+        gap: 5px;
+        margin-top: 7px;
+      }
+
+      .town-row {
+        width: 100%;
+        min-height: 34px;
+        padding: 5px 7px;
+        border: 1px solid #ffffff20;
+        border-radius: 4px;
+        background: #ffffff0b;
+        text-align: left;
+      }
+
+      .smithing-actions {
+        display: flex;
+        flex: 0 0 auto;
+        gap: 5px;
+      }
+
+      .smithing-panel .smithing-action {
+        flex: 0 0 auto;
+        width: auto;
+        padding: 4px 7px;
+        border: 1px solid #596171;
+        border-radius: 4px;
+        background: #2a2f3a;
+        color: #ffd166;
+        font: 600 11px/1.2 system-ui, sans-serif;
+        white-space: nowrap;
+      }
+
+      .smithing-panel .smithing-action:disabled {
+        border-color: #454b56;
+        background: #22262e;
+        color: #858b95;
+        cursor: not-allowed;
+      }
+
+      .town-row span:nth-child(2) { flex: 1 1 auto; }
+      .town-row span:last-child { color: #f0d286; text-align: right; }
+      .town-row:disabled { opacity: 0.48; cursor: not-allowed !important; }
+
+      .town-item-code {
+        display: inline-grid;
+        flex: 0 0 28px;
+        width: 28px;
+        height: 24px;
+        place-items: center;
+        border-radius: 3px;
+        background: #65716b;
+        color: #fff;
+        font: 700 10px monospace;
+      }
+
+      .item-icon {
+        display: block;
+        flex: 0 0 28px;
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
+        image-rendering: pixelated;
+        pointer-events: none;
+      }
+
+      .town-inventory-grid .inventory-slot {
+        width: 100%;
+        padding: 0;
+        cursor: pointer;
+      }
+
+      .town-inventory-grid .item-icon {
+        flex-basis: 48px;
+        width: 48px;
+        height: 48px;
+      }
+
+      .town-inventory-grid .inventory-slot:disabled {
+        cursor: default;
+        opacity: 1;
+      }
+
+      .inventory-slot .item-icon {
+        flex-basis: 48px;
+        width: 48px;
+        height: 48px;
+      }
+
+      .item-tooltip {
+        position: fixed;
+        z-index: 20;
+        display: none;
+        max-width: min(280px, calc(100vw - 16px));
+        padding: 6px 9px;
+        border: 1px solid #68717d;
+        border-radius: 4px;
+        background: #171c24f2;
+        color: #f1e5c9;
+        box-shadow: 0 3px 10px #0009;
+        font: 600 12px/1.35 system-ui, sans-serif;
+        pointer-events: none;
+      }
+
+      .sidebar-content .skills-hud,
+      .sidebar-content .inventory-hud {
+        position: relative;
+        inset: auto;
+        display: block;
+        width: 100%;
+        max-height: none;
+        padding: 12px;
+        overflow: visible;
+        transform: none;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        pointer-events: auto;
+      }
+
+      .sidebar-content .inventory-grid {
+        gap: 5px;
+      }
+
+      .sidebar-content .inventory-slot {
+        min-width: 0;
+      }
+
+      .sidebar-footer {
+        flex: 0 0 auto;
+        padding: 10px;
+        border-top: 1px solid #41484f;
+      }
+
+      .new-character-button {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #e3d3b0;
+        border-radius: 6px;
+        background: #20262d;
+        color: #fff0ce;
+        font: 13px system-ui, sans-serif;
+        cursor: pointer;
+      }
+
+      .skills-hud {
+        display: block;
+        color: #e9e4d8;
+        font-family: system-ui, sans-serif;
+      }
+
+      .skills-hud-header,
+      .skills-total {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+      }
+
+      .skills-hud-header {
+        margin-bottom: 8px;
+        color: #f0c77f;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .skills-xp-drop {
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        color: #f4d77e;
+        font: 700 13px monospace;
+        white-space: nowrap;
+        pointer-events: none;
+        animation: xp-drop 1.6s ease-out forwards;
+      }
+
+      @keyframes xp-drop {
+        from { opacity: 1; transform: translate(-50%, 0); }
+        to { opacity: 0; transform: translate(-50%, -35px); }
+      }
+
+      .skills-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 5px;
+      }
+
+      .skill-cell {
+        min-width: 0;
+        padding: 5px 7px;
+        border: 1px solid #ffffff18;
+        border-radius: 4px;
+        background: #ffffff09;
+      }
+
+      .skill-name {
+        display: block;
+        overflow: hidden;
+        color: #c4cbc9;
+        font-size: 10px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .skill-level {
+        display: block;
+        color: #f2d99c;
+        font-size: 19px;
+        font-weight: 700;
+        line-height: 1.1;
+      }
+
+      .skill-xp {
+        display: block;
+        color: #aeb7b5;
+        font: 10px monospace;
+      }
+
+      .skills-total {
+        margin-top: 8px;
+        padding-top: 7px;
+        border-top: 1px solid #ffffff30;
+        color: #f0c77f;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .inventory-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4px;
+        margin-top: 6px;
+      }
+
+      .inventory-slot {
+        position: relative;
+        display: grid;
+        aspect-ratio: 1;
+        place-items: center;
+        overflow: hidden;
+        border: 1px solid #ffffff26;
+        border-radius: 4px;
+        background: #313941;
+        color: #fff;
+        font: 700 12px monospace;
+        text-shadow: 0 1px 2px #000;
+      }
+
+      .inventory-slot.filled {
+        border-color: #ffffff5c;
+      }
+
+      .inventory-qty {
+        position: absolute;
+        right: 3px;
+        bottom: 2px;
+        color: #fff2c7;
+        font: 10px monospace;
+      }
+
+      .gather-node {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        display: none;
+        width: 32px;
+        height: 32px;
+        transform: translate(-50%, -50%);
+        border: 2px solid #dec99a;
+        border-radius: 50%;
+        background: #604c3b;
+        color: #fff2cf;
+        font: 700 9px monospace;
+        cursor: pointer;
+        pointer-events: none;
+      }
+
+      .gather-node.is-visible {
+        display: block;
+        pointer-events: auto;
+      }
+
+      .gather-node.depleted {
+        filter: grayscale(1);
+        opacity: 0.62;
+      }
+
+      .creation-panel {
+        width: min(760px, 100%);
+        max-height: 100%;
+        padding: 24px;
+        overflow: auto;
+        border: 1px solid #84704e;
+        border-radius: 12px;
+        background: #252b31;
+        box-shadow: 0 18px 70px #0009;
+      }
+
+      .creation-panel h1,
+      .creation-panel h2 { margin: 0 0 12px; }
+      .creation-panel h1 { color: #f0c77f; font-size: 1.7rem; }
+      .creation-panel h2 { margin-top: 20px; font-size: 1.1rem; }
+      .creation-panel label { display: block; margin: 12px 0 6px; font-weight: 600; }
+      .creation-panel input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #66727a;
+        border-radius: 6px;
+        background: #171c21;
+        color: #fff;
+        font: inherit;
+      }
+      .choice-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+      }
+      .choice-card {
+        min-height: 130px;
+        padding: 12px;
+        border: 1px solid #59636a;
+        border-radius: 8px;
+        background: #30383e;
+        color: inherit;
+        text-align: left;
+        cursor: pointer;
+      }
+      .choice-card:hover,
+      .choice-card[aria-pressed="true"] { border-color: #f0c77f; background: #41433c; }
+      .choice-card strong { display: block; margin-bottom: 7px; color: #f0c77f; }
+      .choice-card span { display: block; margin-top: 4px; color: #d2d5d1; font-size: 0.82rem; line-height: 1.35; }
+      .begin-button {
+        width: 100%;
+        margin-top: 22px;
+        padding: 12px;
+        border: 0;
+        border-radius: 6px;
+        background: #c48643;
+        color: #171a1d;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .begin-button:disabled { background: #60676a; color: #c1c4c3; cursor: not-allowed; }
+      .creation-error { min-height: 1.3em; margin: 8px 0 0; color: #ffb1a6; }
+      .slot-card { cursor: default; }
+      .slot-card .begin-button { margin-top: 12px; }
+      .slot-delete {
+        width: 100%;
+        margin-top: 8px;
+        padding: 8px;
+        border: 1px solid #7a4a44;
+        border-radius: 6px;
+        background: transparent;
+        color: #e8a09a;
+        font: inherit;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="layout">
+      <div id="game-column">
+        <div id="game" aria-label="DreamGame RPG"></div>
+        <aside class="message-log" id="message-log" aria-label="Message log"></aside>
+      </div>
+      <aside id="sidebar" aria-label="Game menu">
+        <div id="hp-hud" aria-label="Hitpoints">
+          <div id="hp-label">Hitpoints 1/1</div>
+          <div id="hp-bar"><div id="hp-bar-fill"></div></div>
+        </div>
+        <nav class="sidebar-tabs" aria-label="Character panels">
+          <button class="sidebar-tab" id="skills-tab" type="button" aria-selected="true" aria-controls="skills-panel">Skills</button>
+          <button class="sidebar-tab" id="inventory-tab" type="button" aria-selected="false" aria-controls="inventory-panel">Backpack</button>
+          <button class="sidebar-tab" id="quests-tab" type="button" aria-selected="false" aria-controls="quests-panel">Quests</button>
+          <button class="sidebar-tab" id="equipment-tab" type="button" aria-selected="false" aria-controls="equipment-panel">Equipment</button>
+          <button class="sidebar-tab" id="spellbook-tab" type="button" aria-selected="false" aria-controls="spellbook-panel">Spellbook</button>
+        </nav>
+        <div class="sidebar-content" id="skills-panel"></div>
+        <div class="sidebar-content" id="inventory-panel" hidden></div>
+        <div class="sidebar-content" id="quests-panel" hidden></div>
+        <div class="sidebar-content" id="equipment-panel" hidden></div>
+        <div class="sidebar-content" id="spellbook-panel" hidden></div>
+        <footer class="sidebar-footer" id="sidebar-footer"></footer>
+      </aside>
+    </div>
+    <noscript>This game needs JavaScript enabled to run.</noscript>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <script src="data.js"></script>
+    <script src="character.js"></script>
+    <script src="xp.js"></script>
+    <script src="inventory.js"></script>
+    <script src="town.js"></script>
+    <script src="combat.js"></script>
+    <script src="equipment.js"></script>
+    <script src="quests.js"></script>
+    <script src="interiors.js"></script>
+    <script src="game.js"></script>
+    <script src="prayer.js"></script>
+    <script src="thieving.js"></script>
+    <script src="runecrafting.js"></script>
+  </body>
+</html>
