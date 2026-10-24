@@ -1343,9 +1343,15 @@
       cell.dataset.skill = skill;
       const icon = window.createSkillIconElement?.(skill);
       if (icon) cell.append(icon);
+      const text = document.createElement('div');
+      text.className = 'skill-text';
+      const name = document.createElement('span');
+      name.className = 'skill-name';
+      name.textContent = formatSkill(skill);
       const level = document.createElement('span');
       level.className = 'skill-level';
-      cell.append(level);
+      text.append(name, level);
+      cell.append(text);
       cell.setAttribute('aria-label', formatSkill(skill));
       grid.append(cell);
     });
@@ -1941,6 +1947,7 @@
     quests: window.createWorldIconElement?.('scroll', 'tab-icon'),
     equipment: window.createSkillIconElement?.('defence', 'tab-icon'),
     spellbook: window.createSkillIconElement?.('magic', 'tab-icon'),
+    abilities: window.createSkillIconElement?.('strength', 'tab-icon'),
   };
   Object.entries(tabVisuals).forEach(([tabName, icon]) => {
     const tab = document.querySelector(`#${tabName}-tab`);
