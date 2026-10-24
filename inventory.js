@@ -227,7 +227,11 @@ function inventoryChanged(character) {
 
 function addInventorySortButton() {
   const panel = document.querySelector('.inventory-hud');
-  if (!panel || panel.querySelector('.inventory-sort-button')) return;
+  if (!panel) return;
+  if (panel.querySelector('.inventory-sort-button')) {
+    addInventoryDropButton(panel);
+    return;
+  }
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'inventory-sort-button';
@@ -249,7 +253,47 @@ function addInventorySortButton() {
     sortInventory(inventoryCharacter);
   });
   panel.prepend(button);
+  addInventoryDropButton(panel);
 }
+
+let dropMode = false;
+
+function isDropMode() {
+  return dropMode;
+}
+
+function addInventoryDropButton(panel) {
+  if (panel.querySelector('.inventory-drop-button')) return;
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'inventory-drop-button';
+  button.textContent = 'Drop';
+  Object.assign(button.style, {
+    display: 'block',
+    width: '100%',
+    margin: '0 0 8px',
+    padding: '6px 10px',
+    border: '1px solid #8d744e',
+    borderRadius: '4px',
+    background: '#51402e',
+    color: '#f0d9aa',
+    font: '600 12px system-ui, sans-serif',
+    cursor: 'pointer',
+  });
+  button.addEventListener('click', () => {
+    dropMode = !dropMode;
+    button.textContent = dropMode ? 'Drop: ON' : 'Drop';
+    button.style.background = dropMode ? '#7a2e2e' : '#51402e';
+    window.addGameMessage?.(dropMode
+      ? 'Drop mode is on — tap a backpack item to drop it. Tap Drop again to turn it off.'
+      : 'Drop mode is off.');
+  });
+  const sortButton = panel.querySelector('.inventory-sort-button');
+  if (sortButton) sortButton.after(button);
+  else panel.prepend(button);
+}
+
+window.isDropMode = isDropMode;
 
 const inventoryPanel = document.querySelector('#inventory-panel');
 if (inventoryPanel) {

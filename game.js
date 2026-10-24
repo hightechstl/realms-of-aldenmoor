@@ -1250,6 +1250,10 @@
           window.eatFoodFromSlot?.(character, index);
           return;
         }
+        if (window.isDropMode?.() && character.inventory[index]) {
+          dropBackpackItem(character, index);
+          return;
+        }
         if (event.shiftKey && character.inventory[index]?.itemId !== 'bones') {
           dropBackpackItem(character, index);
           return;
