@@ -693,6 +693,7 @@
     goblin.hpBarBackground.setVisible(false);
     goblin.hpBarFill.setVisible(false);
     spawnDrops(scene, goblin, character);
+    window.onMonsterKilled?.(character, goblin.monsterId);
     scene.time.delayedCall(MONSTERS[goblin.monsterId].respawnMs, () => {
       goblin.hp = goblin.maxHp;
       goblin.remaining = 1;

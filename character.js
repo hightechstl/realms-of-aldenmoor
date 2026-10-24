@@ -144,8 +144,15 @@ function normalizeBank(bank) {
 }
 
 function normalizeQuests(quests) {
-  const stage = quests?.firstErrand;
-  return { firstErrand: Number.isInteger(stage) && stage >= 0 && stage <= 2 ? stage : 0 };
+  const stageOf = (value) => (Number.isInteger(value) && value >= 0 && value <= 2 ? value : 0);
+  const kills = quests?.goblinKills;
+  return {
+    firstErrand: stageOf(quests?.firstErrand),
+    goblinTrouble: stageOf(quests?.goblinTrouble),
+    goblinKills: Number.isInteger(kills) && kills >= 0 && kills <= 5 ? kills : 0,
+    feedingVillage: stageOf(quests?.feedingVillage),
+    ironForDepths: stageOf(quests?.ironForDepths),
+  };
 }
 
 function normalizeEquipment(equipment) {
