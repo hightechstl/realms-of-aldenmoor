@@ -17,6 +17,7 @@ const CHARACTER_SKILLS = [
   'runecrafting',
   'prayer',
   'thieving',
+  'agility',
 ];
 const SAVE_STORAGE_KEY = 'dreamgame.save.v2';
 let saveStore = null;

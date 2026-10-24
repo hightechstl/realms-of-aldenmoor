@@ -159,6 +159,15 @@
       fill(19, 0, 20, 10, 'dirt');
       fill(26, 9, 39, 20, 'scorched');
       fill(25, 14, 39, 15, 'dirt');
+      // Phase 3, Step 3: agility course clearing in the forest, south of the oaks.
+      fill(2, 19, 13, 27, 'grass');
+      fill(7, 16, 7, 18, 'dirt');
+      setTile(5, 20, 'tree', true);
+      setTile(3, 23, 'fence', true);
+      setTile(6, 25, 'stone', true);
+      setTile(10, 25, 'stone', true);
+      setTile(12, 22, 'tree', true);
+      setTile(9, 20, 'tree', true);
       fill(14, 23, 25, 29, 'water', true);
       fill(19, 20, 20, 29, 'dirt');
       fill(19, 22, 20, 27, 'dock');
@@ -251,6 +260,7 @@
       });
 
       window.createThievingNodes?.().forEach((node) => this.nodes.push(node));
+      window.createAgilityNodes?.().forEach((node) => this.nodes.push(node));
       this.interiorNodes.forEach((node) => this.nodes.push(node));
       window.createQuestNpcs?.().forEach((node) => this.nodes.push(node));
       window.createCombatMonsters?.(this).forEach((node) => this.nodes.push(node));
@@ -323,6 +333,8 @@
           anvil: { verb: 'Smith', displayName: 'Anvil' },
           altar: { verb: 'Offer bones', displayName: 'Altar' },
           runeAltar: { verb: 'Craft runes', displayName: 'Rune altar' },
+          agilityObstacle: { verb: node.verb, displayName: node.displayName },
+          shortcut: { verb: node.verb, displayName: node.displayName },
           marketStall: { verb: 'Steal from', displayName: node.displayName },
           citizen: { verb: 'Pickpocket', displayName: 'Citizen' },
           range: { verb: 'Cook', displayName: 'Cooking range' },
@@ -542,6 +554,14 @@
       if (node.type === 'runeAltar') {
         this.cancelNodeAction();
         window.openRunecraftingPanel?.(currentCharacter, node);
+        return;
+      }
+      if (node.type === 'agilityObstacle') {
+        window.performAgilityObstacle?.(this, node, currentCharacter);
+        return;
+      }
+      if (node.type === 'shortcut') {
+        window.useAgilityShortcut?.(this, node, currentCharacter);
         return;
       }
       if (node.type === 'altar') {
