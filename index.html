@@ -26,7 +26,7 @@
 
       #layout {
         display: flex;
-        width: 1080px;
+        width: 1120px;
         height: 690px;
         flex: 0 0 auto;
         transform-origin: center center;
@@ -87,9 +87,9 @@
 
       #sidebar {
         display: flex;
-        flex: 0 0 280px;
+        flex: 0 0 320px;
         flex-direction: column;
-        width: 280px;
+        width: 320px;
         height: 690px;
         border-left: 1px solid #41484f;
         background: #1d2229;
@@ -123,7 +123,7 @@
       .sidebar-tabs {
         display: grid;
         flex: 0 0 48px;
-        grid-template-columns: 0.88fr 1.06fr 0.88fr 1.22fr 1.16fr;
+        grid-template-columns: 0.9fr 1.05fr 0.9fr 1.2fr 1.15fr;
         border-bottom: 1px solid #41484f;
       }
 
@@ -762,7 +762,7 @@
       (function () {
         var layout = document.getElementById('layout');
         function fitLayout() {
-          var s = Math.min(1, window.innerWidth / 1080, window.innerHeight / 690);
+          var s = Math.min(1, window.innerWidth / 1120, window.innerHeight / 690);
           layout.style.transform = 'scale(' + s + ')';
         }
         window.addEventListener('resize', fitLayout);
