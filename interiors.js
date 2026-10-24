@@ -100,10 +100,9 @@
         markerColor: 0x8a5732,
       });
 
-      const outsideDoor = {
-        x: room.exterior.x,
-        y: room.exterior.y,
-      };
+      const outsideDoor = room.doorTile
+        ? { x: room.doorTile.x, y: room.doorTile.y }
+        : { x: room.exterior.x, y: room.exterior.y };
       nodes.push({
         id: `${roomId}-outside-door`,
         type: 'interiorDoor',

@@ -799,16 +799,16 @@ const SMITHING_RECIPES = {
 };
 
 const INTERIOR_ROOMS = {
-  bank: { x: 110, y: 10, width: 12, height: 9, doorX: 115, exterior: { x: 18, y: 14 } },
-  store: { x: 110, y: 30, width: 12, height: 9, doorX: 115, exterior: { x: 22, y: 14 } },
-  smithy: { x: 110, y: 50, width: 12, height: 9, doorX: 115, exterior: { x: 27, y: 14 } },
-  chapel: { x: 110, y: 90, width: 10, height: 8, doorX: 115, exterior: { x: 23, y: 10 } },
-  tower: { x: 110, y: 130, width: 10, height: 8, doorX: 115, exterior: { x: 15, y: 10 } },
+  bank: { x: 110, y: 10, width: 12, height: 9, doorX: 115, exterior: { x: 18, y: 14 }, doorTile: { x: 18, y: 13 } },
+  store: { x: 110, y: 30, width: 12, height: 9, doorX: 115, exterior: { x: 22, y: 14 }, doorTile: { x: 22, y: 13 } },
+  smithy: { x: 110, y: 50, width: 12, height: 9, doorX: 115, exterior: { x: 27, y: 14 }, doorTile: { x: 27, y: 13 } },
+  chapel: { x: 110, y: 90, width: 10, height: 8, doorX: 115, exterior: { x: 23, y: 10 }, doorTile: { x: 23, y: 9 } },
+  tower: { x: 110, y: 130, width: 10, height: 8, doorX: 115, exterior: { x: 15, y: 10 }, doorTile: { x: 14, y: 10 } },
   essenceMine: { x: 110, y: 60, width: 12, height: 9, doorX: 115, exterior: { x: 112, y: 132 }, name: 'Essence Mine' },
   mineDepths: { x: 110, y: 140, width: 14, height: 9, doorX: 116, exterior: { x: 19, y: 1 }, name: 'Mine Depths' },
-  emberfangLair: { x: 110, y: 80, width: 14, height: 9, doorX: 117, exterior: { x: 65, y: 8 }, name: 'Emberfang Lair' },
-  stormmawLair: { x: 110, y: 100, width: 14, height: 9, doorX: 117, exterior: { x: 60, y: 74 }, name: 'Stormmaw Lair' },
-  fishShop: { x: 110, y: 70, width: 12, height: 9, doorX: 115, exterior: { x: 27, y: 60 }, name: 'Fish Market' },
+  emberfangLair: { x: 110, y: 80, width: 14, height: 9, doorX: 117, exterior: { x: 65, y: 8 }, doorTile: { x: 65, y: 7 }, name: 'Emberfang Lair' },
+  stormmawLair: { x: 110, y: 100, width: 14, height: 9, doorX: 117, exterior: { x: 60, y: 74 }, doorTile: { x: 60, y: 73 }, name: 'Stormmaw Lair' },
+  fishShop: { x: 110, y: 70, width: 12, height: 9, doorX: 115, exterior: { x: 27, y: 60 }, doorTile: { x: 27, y: 59 }, name: 'Fish Market' },
 };
 
 window.RACES = RACES;
