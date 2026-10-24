@@ -26,9 +26,10 @@
 
       #layout {
         display: flex;
-        width: 1060px;
+        width: 1080px;
         height: 690px;
         flex: 0 0 auto;
+        transform-origin: center center;
         color: #e9e4d8;
         font-family: system-ui, sans-serif;
       }
@@ -86,9 +87,9 @@
 
       #sidebar {
         display: flex;
-        flex: 0 0 260px;
+        flex: 0 0 280px;
         flex-direction: column;
-        width: 260px;
+        width: 280px;
         height: 690px;
         border-left: 1px solid #41484f;
         background: #1d2229;
@@ -127,11 +128,14 @@
       }
 
       .sidebar-tab {
+        min-width: 0;
+        padding: 0 2px;
         border: 0;
         border-bottom: 3px solid transparent;
         background: transparent;
         color: #b9c0c3;
-        font: 600 14px system-ui, sans-serif;
+        font: 600 11px system-ui, sans-serif;
+        white-space: nowrap;
         cursor: pointer;
       }
 
@@ -752,5 +756,17 @@
     <script src="prayer.js"></script>
     <script src="thieving.js"></script>
     <script src="runecrafting.js"></script>
+    <script>
+      (function () {
+        var layout = document.getElementById('layout');
+        function fitLayout() {
+          var s = Math.min(1, window.innerWidth / 1080, window.innerHeight / 690);
+          layout.style.transform = 'scale(' + s + ')';
+        }
+        window.addEventListener('resize', fitLayout);
+        window.addEventListener('orientationchange', fitLayout);
+        fitLayout();
+      })();
+    </script>
   </body>
 </html>
