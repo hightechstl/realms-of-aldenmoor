@@ -3,7 +3,13 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>DreamGame</title>
+    <title>Realms of Aldenmoor</title>
+    <meta name="description" content="Realms of Aldenmoor — a free 2D browser RPG in the classic style. Train 16 skills, complete quests, and explore a hand-built world. Train anything, be everything.">
+    <meta name="theme-color" content="#171a22">
+    <meta property="og:title" content="Realms of Aldenmoor">
+    <meta property="og:description" content="A free 2D browser RPG. Train anything, be everything.">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23263b32'/%3E%3Cpolygon points='32,10 50,32 32,54 14,32' fill='%23f0c77f'/%3E%3Ccircle cx='32' cy='32' r='6' fill='%23171a22'/%3E%3C/svg%3E">
     <style>
       * {
         box-sizing: border-box;
@@ -25,6 +31,7 @@
       }
 
       #layout {
+        position: relative;
         display: flex;
         width: 1120px;
         height: 690px;
@@ -51,6 +58,102 @@
         margin: 0;
         overflow: hidden;
         background: #263b32;
+      }
+
+      .title-screen {
+        position: absolute;
+        inset: 0;
+        z-index: 50;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        padding: 32px;
+        text-align: center;
+        background: radial-gradient(ellipse at 50% 38%, rgb(38 59 50 / 96%), rgb(13 17 21 / 99%) 75%);
+        transition: opacity 450ms ease, visibility 450ms;
+      }
+
+      .title-screen.title-hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+
+      .title-eyebrow {
+        color: #b9c0c3;
+        font: 600 12px system-ui, sans-serif;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+      }
+
+      .title-name {
+        margin: 0;
+        color: #f0c77f;
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 64px;
+        font-weight: 700;
+        letter-spacing: 6px;
+        line-height: 1.05;
+        text-shadow: 0 3px 0 #6b4f1d, 0 10px 28px #000c;
+      }
+
+      .title-name span {
+        display: block;
+        color: #e9e4d8;
+        font-size: 30px;
+        font-style: italic;
+        font-weight: 400;
+        letter-spacing: 3px;
+      }
+
+      .title-rule {
+        color: #8d744e;
+        font-size: 15px;
+        letter-spacing: 10px;
+      }
+
+      .title-tagline {
+        margin: 0;
+        color: #f4ead4;
+        font: italic 17px Georgia, 'Times New Roman', serif;
+      }
+
+      .title-controls {
+        display: grid;
+        gap: 4px;
+        margin-top: 8px;
+        padding: 12px 20px;
+        border: 1px solid #ffffff22;
+        border-radius: 8px;
+        background: #ffffff08;
+        color: #c4cbc9;
+        font: 12.5px/1.5 system-ui, sans-serif;
+      }
+
+      .title-controls strong { color: #f0d286; font-weight: 600; }
+
+      .title-enter {
+        margin-top: 10px;
+        padding: 14px 44px;
+        border: 1px solid #e3d3b0;
+        border-radius: 8px;
+        background: #c48643;
+        color: #171a1d;
+        font: 700 17px system-ui, sans-serif;
+        letter-spacing: 1px;
+        cursor: pointer;
+        box-shadow: 0 8px 24px #000a;
+      }
+
+      .title-enter:hover { background: #d59a52; }
+
+      .title-footer {
+        margin-top: 6px;
+        color: #77808a;
+        font: 11px system-ui, sans-serif;
+        letter-spacing: 1px;
       }
 
       .creation-screen {
@@ -719,8 +822,21 @@
   </head>
   <body>
     <div id="layout">
+      <div class="title-screen" id="title-screen" role="dialog" aria-label="Realms of Aldenmoor title screen">
+        <div class="title-eyebrow">A High Tech STL Adventure</div>
+        <h1 class="title-name"><span>Realms of</span>ALDENMOOR</h1>
+        <div class="title-rule">◆ ◆ ◆</div>
+        <p class="title-tagline">Train anything. Be everything.</p>
+        <div class="title-controls">
+          <div><strong>Click</strong> — move &amp; interact</div>
+          <div><strong>E / Space</strong> — interact with what's ahead of you</div>
+          <div><strong>Shift+Click</strong> a backpack item — drop it</div>
+        </div>
+        <button class="title-enter" id="title-enter" type="button">Enter Aldenmoor</button>
+        <div class="title-footer">Version 1.0 · Best in landscape on mobile</div>
+      </div>
       <div id="game-column">
-        <div id="game" aria-label="DreamGame RPG"></div>
+        <div id="game" aria-label="Realms of Aldenmoor game world"></div>
         <aside class="message-log" id="message-log" aria-label="Message log"></aside>
       </div>
       <aside id="sidebar" aria-label="Game menu">
@@ -769,6 +885,20 @@
         window.addEventListener('resize', fitLayout);
         window.addEventListener('orientationchange', fitLayout);
         fitLayout();
+      })();
+    </script>
+    <script>
+      (function () {
+        var screen = document.getElementById('title-screen');
+        var enter = document.getElementById('title-enter');
+        function dismiss() {
+          if (!screen || screen.classList.contains('title-hidden')) return;
+          screen.classList.add('title-hidden');
+        }
+        if (enter) enter.addEventListener('click', dismiss);
+        window.addEventListener('keydown', function (event) {
+          if (event.key === 'Enter') dismiss();
+        });
       })();
     </script>
   </body>
