@@ -123,7 +123,7 @@
       .sidebar-tabs {
         display: grid;
         flex: 0 0 48px;
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: 0.88fr 1.06fr 0.88fr 1.22fr 1.16fr;
         border-bottom: 1px solid #41484f;
       }
 
@@ -136,6 +136,8 @@
         color: #b9c0c3;
         font: 600 11px system-ui, sans-serif;
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
         cursor: pointer;
       }
 
