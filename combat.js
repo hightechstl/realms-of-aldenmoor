@@ -380,6 +380,7 @@
   }
 
   function wanderGoblin(scene, node) {
+    if (scene.encounterActive) return;
     if (!node.alive || scene.currentAction === node || node.wandering) return;
     const directions = Phaser.Utils.Array.Shuffle([
       { x: 0, y: -1 },
@@ -1035,6 +1036,11 @@
     && node.tile.x === x
     && node.tile.y === y
   ));
+  window.killMonsterForEncounter = killGoblin;
+  window.playerDiedForEncounter = playerDied;
+  window.refreshHealthForEncounter = refreshHealth;
+  window.maxHitpointsForEncounter = maxHitpoints;
+  window.hitChanceForEncounter = combatHitChance;
   window.takeGroundItem = takeGroundItem;
   window.eatFoodFromSlot = eatFoodFromSlot;
   window.refreshCombatHud = drawCombatHud;

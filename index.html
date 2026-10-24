@@ -953,6 +953,187 @@
       }
       .save-transfer-status { margin: 10px 0 0; color: #a9d69a; }
       .save-transfer-confirm { margin-top: 12px; }
+
+      .encounter-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 40;
+        display: flex;
+        flex-direction: column;
+        background: radial-gradient(ellipse at 50% 30%, #33473c 0%, #141a17 78%);
+        color: #e9e4d8;
+        font-family: system-ui, sans-serif;
+      }
+
+      .encounter-region-wastes { background: radial-gradient(ellipse at 50% 30%, #5a3626 0%, #1d120c 78%); }
+      .encounter-region-stormcove { background: radial-gradient(ellipse at 50% 30%, #274b5e 0%, #0d1a24 78%); }
+      .encounter-region-farmland { background: radial-gradient(ellipse at 50% 30%, #3d5231 0%, #131a10 78%); }
+      .encounter-region-stronghold { background: radial-gradient(ellipse at 50% 30%, #4a3436 0%, #1a1113 78%); }
+
+      .encounter-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        padding: 14px 18px 2px;
+      }
+
+      .encounter-title {
+        color: #f0c77f;
+        font: 700 24px Georgia, 'Times New Roman', serif;
+        letter-spacing: 1px;
+      }
+
+      .encounter-turn { color: #b9c0c3; font: 600 12px system-ui, sans-serif; letter-spacing: 1px; }
+
+      .encounter-arena {
+        flex: 1 1 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        min-height: 0;
+        padding: 4px 26px;
+      }
+
+      .encounter-fighter { width: 250px; text-align: center; }
+
+      .encounter-stage {
+        position: relative;
+        display: grid;
+        height: 168px;
+        place-items: center;
+      }
+
+      .encounter-sprite {
+        width: 148px;
+        height: 148px;
+        object-fit: contain;
+        image-rendering: pixelated;
+        filter: drop-shadow(0 10px 12px #000a);
+      }
+
+      .encounter-sprite.encounter-boss { width: 178px; height: 178px; }
+
+      .encounter-fallback {
+        display: grid;
+        width: 128px;
+        height: 128px;
+        place-items: center;
+        border: 3px solid #00000055;
+        border-radius: 50%;
+        color: #171a1d;
+        font: 700 54px Georgia, serif;
+      }
+
+      .encounter-name { margin-top: 4px; font: 700 17px system-ui, sans-serif; }
+      .encounter-sub { color: #aeb7b5; font-size: 12px; }
+
+      .encounter-hpbar {
+        height: 15px;
+        margin-top: 8px;
+        overflow: hidden;
+        border: 1px solid #ffffff38;
+        border-radius: 8px;
+        background: #241d1d;
+      }
+
+      .encounter-hpfill { height: 100%; background: #53bd65; transition: width 450ms ease, background-color 450ms ease; }
+
+      .encounter-hptext { margin-top: 4px; color: #f4ead4; font: 700 13px monospace; }
+
+      .encounter-vs { color: #8d744e; font: italic 700 22px Georgia, serif; }
+
+      .encounter-splat {
+        position: absolute;
+        top: 12px;
+        left: 50%;
+        z-index: 3;
+        color: #ff5b55;
+        font: 700 28px system-ui, sans-serif;
+        text-shadow: 0 2px 0 #201b1b, 0 0 12px #000;
+        pointer-events: none;
+        animation: encounter-splat-rise 0.95s ease-out forwards;
+      }
+
+      .encounter-splat-miss { color: #69b9ff; font-size: 19px; }
+
+      @keyframes encounter-splat-rise {
+        from { opacity: 1; transform: translate(-50%, 0); }
+        to { opacity: 0; transform: translate(-50%, -36px); }
+      }
+
+      .encounter-hit { animation: encounter-shake 0.34s ease; }
+      .encounter-lunge-right { animation: encounter-lunge-r 0.34s ease; }
+      .encounter-lunge-left { animation: encounter-lunge-l 0.34s ease; }
+
+      @keyframes encounter-shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-7px); }
+        75% { transform: translateX(7px); }
+      }
+
+      @keyframes encounter-lunge-r {
+        0%, 100% { transform: translateX(0); }
+        45% { transform: translateX(30px); }
+      }
+
+      @keyframes encounter-lunge-l {
+        0%, 100% { transform: translateX(0); }
+        45% { transform: translateX(-30px); }
+      }
+
+      .encounter-log {
+        flex: 0 0 88px;
+        margin: 0 18px;
+        padding: 8px 12px;
+        overflow: hidden;
+        border: 1px solid #ffffff22;
+        border-radius: 8px;
+        background: #00000059;
+        font: 13px/1.5 system-ui, sans-serif;
+      }
+
+      .encounter-log p { margin: 1px 0; }
+
+      .encounter-menu {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        padding: 12px 18px 16px;
+      }
+
+      .encounter-btn {
+        padding: 12px 8px;
+        border: 1px solid #596171;
+        border-radius: 8px;
+        background: #2a2f3a;
+        color: #e9e4d8;
+        font: 600 14px system-ui, sans-serif;
+        cursor: pointer;
+      }
+
+      .encounter-btn-primary { border-color: #e3d3b0; background: #51402e; color: #ffd166; }
+      .encounter-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+      .encounter-bag {
+        display: grid;
+        gap: 7px;
+        padding: 12px 18px 16px;
+      }
+
+      .encounter-bag-title { color: #f0c77f; font: 700 14px system-ui, sans-serif; }
+      .encounter-bag-note { margin: 0; color: #c4cbc9; font-size: 12px; }
+
+      .encounter-result {
+        margin: 12px 18px 16px;
+        padding: 16px;
+        border: 1px solid #e3d3b0;
+        border-radius: 10px;
+        background: #00000059;
+        text-align: center;
+      }
+
+      .encounter-result-title { color: #ffd166; font: 700 26px Georgia, serif; }
+      .encounter-result-body { margin: 8px 0 14px; color: #e9e4d8; font: 14px/1.5 system-ui, sans-serif; }
     </style>
   </head>
   <body>
@@ -967,10 +1148,11 @@
           <div><strong>E / Space</strong> — interact with what's ahead of you</div>
           <div><strong>Shift+Click</strong> or the backpack's <strong>Drop</strong> button — drop an item</div>
           <div><strong>Long-press</strong> an item — see its name</div>
+          <div><strong>Attack a monster</strong> — turn-based encounter: pick a move each turn</div>
           <div><strong>Characters screen</strong> — export a save code to play on another device</div>
         </div>
         <button class="title-enter" id="title-enter" type="button">Enter Aldenmoor</button>
-        <div class="title-footer">Version 1.5 · Stormcove Isle · Best in landscape on mobile</div>
+        <div class="title-footer">Version 1.6 · Encounter Combat · Best in landscape on mobile</div>
       </div>
       <div id="game-column">
         <div id="game" aria-label="Realms of Aldenmoor game world"></div>
@@ -1005,6 +1187,7 @@
     <script src="inventory.js"></script>
     <script src="town.js"></script>
     <script src="combat.js"></script>
+    <script src="encounter.js"></script>
     <script src="equipment.js"></script>
     <script src="quests.js"></script>
     <script src="interiors.js"></script>

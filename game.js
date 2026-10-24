@@ -1040,7 +1040,7 @@
         this.pointerOverGame = true;
       });
       this.input.on('pointerdown', (pointer) => {
-        if (!this.player || window.isPlayerStunned?.(this)) return;
+        if (!this.player || this.encounterActive || window.isPlayerStunned?.(this)) return;
         const tile = this.getTileUnderPointer(pointer);
         if (!tile) return;
         const interactable = this.tileInteractables.get(this.tileKey(tile));
@@ -1070,6 +1070,7 @@
       this.input.keyboard.on('keydown', (event) => {
         if (
           event.repeat || document.querySelector('.creation-screen')
+          || this.encounterActive
           || window.isPlayerStunned?.(this)
         ) return;
         if (event.key.toLowerCase() === 'e' || event.code === 'Space') {
@@ -1140,6 +1141,7 @@
     update() {
       this.updateInteractHover();
       if (!this.player) return;
+      if (this.encounterActive) return;
       window.updateTownDistance?.(this.currentTile);
       if (window.isPlayerStunned?.(this)) return;
       window.updateCombat?.(this);
