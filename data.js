@@ -415,7 +415,7 @@ const INTERIOR_ROOMS = {
   chapel: { x: 110, y: 90, width: 10, height: 8, doorX: 115, exterior: { x: 23, y: 10 } },
   tower: { x: 110, y: 130, width: 10, height: 8, doorX: 115, exterior: { x: 15, y: 10 } },
   essenceMine: { x: 110, y: 60, width: 12, height: 9, doorX: 115, exterior: { x: 112, y: 132 }, name: 'Essence Mine' },
-  mineDepths: { x: 110, y: 140, width: 14, height: 9, doorX: 116, exterior: { x: 20, y: 9 }, name: 'Mine Depths' },
+  mineDepths: { x: 110, y: 140, width: 14, height: 9, doorX: 116, exterior: { x: 19, y: 1 }, name: 'Mine Depths' },
 };
 
 window.RACES = RACES;
