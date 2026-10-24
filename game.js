@@ -1250,6 +1250,10 @@
           window.eatFoodFromSlot?.(character, index);
           return;
         }
+        if (event.shiftKey && character.inventory[index]?.itemId !== 'bones') {
+          dropBackpackItem(character, index);
+          return;
+        }
         if (window.equipFromInventory?.(character, index)) return;
         if (window.handleBackpackItemClick?.(character, index)) return;
         if (character.inventory[index]?.itemId === 'bones') {
@@ -1257,11 +1261,6 @@
           return;
         }
         window.eatFoodFromSlot?.(character, index);
-      };
-      element.oncontextmenu = (event) => {
-        event.preventDefault();
-        if (document.querySelector('.town-panel')) return;
-        dropBackpackItem(character, index);
       };
       const slot = character.inventory[index];
       element.replaceChildren();
