@@ -54,6 +54,21 @@ function handleBackpackItemClick(character, index) {
     window.addGameMessage?.('You fletch 15 bronze arrows.');
     return true;
   }
+  if (slot.itemId === 'ironArrowheads') {
+    if (countItem(character, 'arrowShafts') < 15 || countItem(character, 'ironArrowheads') < 15) {
+      window.addGameMessage?.('You need arrow shafts and iron arrowheads to fletch arrows (15 each).');
+      return true;
+    }
+    removeItem(character, 'arrowShafts', 15);
+    removeItem(character, 'ironArrowheads', 15);
+    if (addItem(character, 'ironArrow', 15) !== 0) {
+      throw new Error('Could not add fletched arrows after consuming the required materials.');
+    }
+    const result = addXp(character, 'fletching', 20);
+    window.handleCombatXp?.('fletching', result, window.activePrayerScene?.());
+    window.addGameMessage?.('You fletch 15 iron arrows.');
+    return true;
+  }
   return false;
 }
 

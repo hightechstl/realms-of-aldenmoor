@@ -625,7 +625,26 @@
       }
 
       if (node.type === 'furnace') {
-        if (countItem(currentCharacter, 'copperOre') < 1 || countItem(currentCharacter, 'tinOre') < 1) {
+        const hasBronzeOres = countItem(currentCharacter, 'copperOre') >= 1
+          && countItem(currentCharacter, 'tinOre') >= 1;
+        if (!hasBronzeOres && countItem(currentCharacter, 'ironOre') >= 1) {
+          if (levelForXp(currentCharacter.skills.smithing.xp) < 15) {
+            window.addGameMessage?.('You need a Smithing level of 15 to smelt iron.');
+            this.cancelNodeAction();
+            return;
+          }
+          removeItem(currentCharacter, 'ironOre', 1);
+          if (Math.random() < 0.5) {
+            window.addGameMessage?.('The iron ore is too impure and the bar fails to form.');
+          } else {
+            addItem(currentCharacter, 'ironBar', 1);
+            const ironResult = addXp(currentCharacter, 'smithing', 12.5);
+            this.afterActionXp('smithing', ironResult);
+          }
+          this.scheduleNextAction();
+          return;
+        }
+        if (!hasBronzeOres) {
           this.cancelNodeAction();
           return;
         }
@@ -721,7 +740,8 @@
         node.remaining <= 0
         || !this.isAdjacentTo(node)
         || (node.type === 'furnace'
-          && (countItem(currentCharacter, 'copperOre') < 1 || countItem(currentCharacter, 'tinOre') < 1))
+          && !((countItem(currentCharacter, 'copperOre') >= 1 && countItem(currentCharacter, 'tinOre') >= 1)
+            || countItem(currentCharacter, 'ironOre') >= 1))
         || (node.type === 'range'
           && !['rawShrimp', 'rawTrout', 'rawChicken', 'rawBeef']
             .some((itemId) => countItem(currentCharacter, itemId) > 0))
@@ -1055,16 +1075,18 @@
       recipes.forEach(([itemId, recipe]) => {
         const item = ITEMS[itemId];
         const smithingLevel = levelForXp(character.skills.smithing.xp);
-        const missingBars = countItem(character, 'bronzeBar') < recipe.bars;
+        const barId = recipe.barId || 'bronzeBar';
+        const barName = ITEMS[barId].name.toLowerCase();
+        const missingBars = countItem(character, barId) < recipe.bars;
         const levelTooLow = smithingLevel < recipe.level;
         const disabledReason = levelTooLow
           ? `Requires Smithing ${recipe.level}`
-          : missingBars ? `Need ${recipe.bars} bronze bar${recipe.bars === 1 ? '' : 's'}` : '';
+          : missingBars ? `Need ${recipe.bars} ${barName}${recipe.bars === 1 ? '' : 's'}` : '';
         const row = document.createElement('div');
         row.className = 'town-row';
         const description = document.createElement('span');
         const yieldLabel = recipe.yields ? ` ×${recipe.yields}` : '';
-        description.textContent = `${item.name}${yieldLabel} — ${recipe.bars} bronze bar${recipe.bars === 1 ? '' : 's'}, Smithing ${recipe.level}`;
+        description.textContent = `${item.name}${yieldLabel} — ${recipe.bars} ${barName}${recipe.bars === 1 ? '' : 's'}, Smithing ${recipe.level}`;
         row.append(description);
         const actions = document.createElement('div');
         actions.className = 'smithing-actions';
@@ -1089,14 +1111,15 @@
         window.addGameMessage?.(`You need a Smithing level of ${recipe.level} to make that.`);
         return;
       }
+      const barId = recipe.barId || 'bronzeBar';
       let made = 0;
-      while (countItem(character, 'bronzeBar') >= recipe.bars) {
+      while (countItem(character, barId) >= recipe.bars) {
         const yieldQty = recipe.yields ?? 1;
         if (canAddItem(character, itemId, yieldQty) < yieldQty) {
           if (made === 0) window.addGameMessage?.('Your inventory is too full.');
           break;
         }
-        removeItem(character, 'bronzeBar', recipe.bars);
+        removeItem(character, barId, recipe.bars);
         if (addItem(character, itemId, yieldQty) > 0) {
           throw new Error(`Could not add crafted item ${itemId} after checking backpack capacity.`);
         }
@@ -1111,8 +1134,8 @@
         }
         if (!all) break;
       }
-      if (made === 0 && countItem(character, 'bronzeBar') < recipe.bars) {
-        window.addGameMessage?.(`You need ${recipe.bars} bronze bar${recipe.bars === 1 ? '' : 's'} to make that.`);
+      if (made === 0 && countItem(character, barId) < recipe.bars) {
+        window.addGameMessage?.(`You need ${recipe.bars} ${ITEMS[barId].name.toLowerCase()}${recipe.bars === 1 ? '' : 's'} to make that.`);
       }
       render();
     }

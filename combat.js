@@ -76,6 +76,26 @@
       graphics.destroy();
     }
 
+    if (!scene.textures.exists('hobgoblin')) {
+      const graphics = scene.make.graphics({ x: 0, y: 0, add: false });
+      graphics.fillStyle(0x2e2019, 0.45);
+      graphics.fillEllipse(16, 30, 26, 8);
+      graphics.fillStyle(0x9c623a, 1);
+      graphics.fillTriangle(4, 12, -1, 3, 10, 7);
+      graphics.fillTriangle(28, 12, 33, 3, 22, 7);
+      graphics.fillCircle(16, 12, 11);
+      graphics.fillStyle(0x6e3b2a, 1);
+      graphics.fillRoundedRect(5, 19, 22, 13, 4);
+      graphics.fillStyle(0x1f1c14, 1);
+      graphics.fillCircle(12, 12, 1.8);
+      graphics.fillCircle(20, 12, 1.8);
+      graphics.fillStyle(0x45352b, 1);
+      graphics.fillRect(10, 30, 5, 3);
+      graphics.fillRect(18, 30, 5, 3);
+      graphics.generateTexture('hobgoblin', 32, 36);
+      graphics.destroy();
+    }
+
     if (!scene.textures.exists('chicken')) {
       const graphics = scene.make.graphics({ x: 0, y: 0, add: false });
       graphics.fillStyle(0xeee4c9, 1);
@@ -139,6 +159,11 @@
       { x: 30, y: 19 },
       { x: 36, y: 19 },
     ].map((spawn, index) => createMonsterNode(scene, 'goblin', `goblin-${index + 1}`, spawn, 'Goblin', 'goblin'));
+    const hobgoblins = [
+      { x: 33, y: 12 },
+      { x: 27, y: 16 },
+      { x: 38, y: 17 },
+    ].map((spawn, index) => createMonsterNode(scene, 'hobgoblin', `hobgoblin-${index + 1}`, spawn, 'Hobgoblin', 'hobgoblin'));
     const chickens = [
       { x: 49, y: 29 }, { x: 54, y: 34 }, { x: 62, y: 38 }, { x: 65, y: 43 },
     ].map((spawn, index) => createMonsterNode(scene, 'chicken', `chicken-${index + 1}`, spawn, 'Chicken', 'chicken'));
@@ -155,14 +180,14 @@
       'Training target',
       'training-target',
     ));
-    return [...goblins, ...chickens, ...cows, ...targets];
+    return [...goblins, ...hobgoblins, ...chickens, ...cows, ...targets];
   }
 
   function createMonsterNode(scene, monsterId, id, spawn, displayName, texture) {
       const monster = MONSTERS[monsterId];
       const node = {
         id,
-        type: monsterId === 'goblin' ? 'goblin'
+        type: monsterId === 'goblin' || monsterId === 'hobgoblin' ? 'goblin'
           : monsterId === 'trainingTarget' ? 'trainingTarget' : 'farmAnimal',
         monsterId,
         x: spawn.x,
@@ -204,7 +229,7 @@
         node.hpBarBackground = null;
         node.hpBarFill = null;
       }
-      if (monsterId === 'goblin') {
+      if (monsterId === 'goblin' || monsterId === 'hobgoblin') {
         node.wanderEvent = scene.time.addEvent({
           delay: Phaser.Math.Between(3000, 5000),
           loop: true,

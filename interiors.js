@@ -114,6 +114,8 @@
           ? 'Wizard Tower entrance'
           : roomId === 'essenceMine'
             ? 'Essence portal'
+            : roomId === 'mineDepths'
+              ? 'Mine ladder'
             : `${roomId[0].toUpperCase()}${roomId.slice(1)} door`,
         range: 1,
         remaining: Infinity,
@@ -276,6 +278,31 @@
         maxYield: 1,
         label: 'Essence',
         markerColor: 0x9fd8e8,
+      });
+    });
+
+    const depths = rooms.mineDepths;
+    [[2, 2], [5, 3], [8, 2], [11, 3], [3, 6], [7, 6], [10, 6]].forEach(([offsetX, offsetY], index) => {
+      const rockTile = { x: depths.x + offsetX, y: depths.y + offsetY };
+      scene.blocked[rockTile.y][rockTile.x] = true;
+      nodes.push({
+        id: `iron-rock-${index + 1}`,
+        type: 'ore',
+        itemId: 'ironOre',
+        skill: 'mining',
+        level: 15,
+        xp: 35,
+        x: rockTile.x,
+        y: rockTile.y,
+        tile: rockTile,
+        region: 'mineDepths',
+        verb: 'Mine',
+        displayName: 'Iron rock',
+        range: 1,
+        remaining: 1,
+        maxYield: 1,
+        label: 'Fe',
+        markerColor: 0x9aa5aa,
       });
     });
 
