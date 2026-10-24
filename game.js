@@ -1258,6 +1258,11 @@
         }
         window.eatFoodFromSlot?.(character, index);
       };
+      element.oncontextmenu = (event) => {
+        event.preventDefault();
+        if (document.querySelector('.town-panel')) return;
+        dropBackpackItem(character, index);
+      };
       const slot = character.inventory[index];
       element.replaceChildren();
       element.title = slot ? '' : 'Empty slot';
@@ -1311,7 +1316,51 @@
     }).setOrigin(0.5).setDepth(6);
   };
 
+  function dropBackpackItem(character, index) {
+    const scene = activeScene;
+    if (!scene || !character.inventory[index]) return;
+    const origin = scene.currentTile || character.worldTile;
+    if (!origin) return;
+    const removed = removeInventorySlot(character, index);
+    if (!removed) return;
+    const offsets = [
+      [0, 0], [1, 0], [-1, 0], [0, 1], [0, -1],
+      [1, 1], [1, -1], [-1, 1], [-1, -1],
+    ];
+    const spot = offsets
+      .map(([dx, dy]) => ({ x: origin.x + dx, y: origin.y + dy }))
+      .find((tile) => (
+        tile.x >= 0 && tile.y >= 0
+        && tile.x < scene.grid[0].length && tile.y < scene.grid.length
+        && !scene.blocked[tile.y][tile.x]
+        && !scene.tileInteractables.has(scene.tileKey(tile))
+      ));
+    if (!spot) {
+      addItem(character, removed.itemId, removed.qty);
+      window.addGameMessage?.('There is no room to drop that here.');
+      return;
+    }
+    const node = {
+      id: `drop-${Date.now()}`,
+      type: 'groundItem',
+      groundItems: [{ itemId: removed.itemId, qty: removed.qty }],
+      x: spot.x,
+      y: spot.y,
+      tile: { ...spot },
+      region: 'ground',
+      maxYield: Infinity,
+      remaining: 1,
+      verb: 'Take',
+      displayName: ITEMS[removed.itemId].name,
+    };
+    window.updateGroundItemPresentation?.(scene, node, node.groundItems[0]);
+    scene.nodes.push(node);
+    scene.tileInteractables.set(scene.tileKey(node.tile), node);
+    window.addGameMessage?.(`You drop the ${ITEMS[removed.itemId].name.toLowerCase()}.`);
+  }
+
   window.refreshInventoryHud = refreshInventoryHud;
+  window.dropBackpackItem = dropBackpackItem;
   window.addGameMessage = addMessage;
   window.activePrayerScene = () => activeScene;
   window.handleCombatXp = (skill, result, scene) => {
