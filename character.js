@@ -91,6 +91,10 @@ function createCharacter(name, raceId, classId) {
     rangedStyle: 'accurate',
     bank: [],
     quests: { firstErrand: 0 },
+    abilityMods: {
+      power: { tier1: null, tier2: null, tier3: null },
+      heal: { tier1: null, tier2: null, tier3: null },
+    },
     starterCoinsGranted: true,
     saveVersion: 1,
   };
@@ -108,6 +112,7 @@ function saveCharacter(character) {
   store.sharedBank = normalizeBank(character.bank);
   character.bank = store.sharedBank;
   character.quests = normalizeQuests(character.quests);
+  character.abilityMods = normalizeAbilityMods(character.abilityMods);
   character.saveVersion = 1;
   const slotCharacter = { ...character };
   delete slotCharacter.bank;
@@ -157,6 +162,23 @@ function normalizeQuests(quests) {
     beneathWaves: stageOf(quests?.beneathWaves),
     stormmawSlain: quests?.stormmawSlain === true,
   };
+}
+
+function normalizeAbilityMods(mods) {
+  const clean = {
+    power: { tier1: null, tier2: null, tier3: null },
+    heal: { tier1: null, tier2: null, tier3: null },
+  };
+  if (!mods || typeof mods !== 'object') return clean;
+  Object.keys(clean).forEach((abilityKey) => {
+    ['tier1', 'tier2', 'tier3'].forEach((tierKey) => {
+      const candidate = mods[abilityKey]?.[tierKey];
+      const valid = (ABILITY_MODS[abilityKey]?.tiers?.[tierKey] || [])
+        .some((mod) => mod.id === candidate);
+      if (valid) clean[abilityKey][tierKey] = candidate;
+    });
+  });
+  return clean;
 }
 
 function normalizeEquipment(equipment) {
@@ -243,6 +265,11 @@ function loadCharacter() {
   const quests = normalizeQuests(character.quests);
   if (!character.quests || JSON.stringify(character.quests) !== JSON.stringify(quests)) {
     character.quests = quests;
+    migrated = true;
+  }
+  const abilityMods = normalizeAbilityMods(character.abilityMods);
+  if (JSON.stringify(character.abilityMods) !== JSON.stringify(abilityMods)) {
+    character.abilityMods = abilityMods;
     migrated = true;
   }
   if (character.starterCoinsGranted !== true && !Number.isInteger(character.starterCoinsPending)) {
@@ -393,6 +420,7 @@ function sanitizeImportedSlot(slot) {
     combatStyle: normalizeCombatStyle(slot.combatStyle),
     rangedStyle: normalizeRangedStyle(slot.rangedStyle),
     quests: normalizeQuests(slot.quests),
+    abilityMods: normalizeAbilityMods(slot.abilityMods),
     starterCoinsGranted: slot.starterCoinsGranted === true,
     saveVersion: 1,
   };

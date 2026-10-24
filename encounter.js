@@ -125,6 +125,7 @@
       over: false,
       bagOpen: false,
       guarding: false,
+      staggered: false,
       turn: 1,
       abilityCooldown: 0,
       windCooldown: 0,
@@ -269,10 +270,24 @@
     return result;
   }
 
+  function equippedModSet(character, abilityKey) {
+    const equipped = new Set();
+    if (!character || typeof normalizeAbilityMods !== 'function') return equipped;
+    const mods = normalizeAbilityMods(character.abilityMods);
+    Object.values(mods[abilityKey] || {}).forEach((id) => { if (id) equipped.add(id); });
+    return equipped;
+  }
+
   function secondWindAmount(state) {
     const defence = levelForXp(state.character.skills.defence.xp);
     let amount = 3 + Math.floor(defence / 5);
     if (state.character.classId === 'acolyte') amount += 2;
+    const mods = equippedModSet(state.character, 'heal');
+    if (mods.has('deepBreath')) amount += 2;
+    if (mods.has('fieldDressing')) amount += Math.floor(defence / 10);
+    if (mods.has('secondHeart')) {
+      amount = Math.max(amount, Math.ceil(maxHitpoints(state.character) / 4));
+    }
     return amount;
   }
 
@@ -302,9 +317,12 @@
         : `Attack · ${styleName(character, mode)}`;
     state.el.attackBtn.disabled = busy;
     const ability = ABILITY_BY_MODE[mode];
+    const equippedPower = equippedModSet(character, 'power').size;
     state.el.abilityBtn.textContent = state.abilityCooldown > 0
       ? `${ability.name} (${state.abilityCooldown})`
-      : ability.name;
+      : equippedPower > 0
+        ? `${ability.name} · ${equippedPower} mod${equippedPower === 1 ? '' : 's'}`
+        : ability.name;
     state.el.abilityBtn.disabled = busy || state.abilityCooldown > 0;
     const heal = secondWindAmount(state);
     state.el.windBtn.textContent = state.windCooldown > 0
@@ -376,8 +394,13 @@
     const bonuses = window.getEquipBonuses?.(character) || {
       attackBonus: 0, strengthBonus: 0, defenceBonus: 0, rangedBonus: 0, magicBonus: 0,
     };
-    let damage = 0;
-    let hit = false;
+    const powerMods = isAbility ? equippedModSet(character, 'power') : new Set();
+    const accBonus = ability ? ability.accuracy * (powerMods.has('precise') ? 2 : 1) : 0;
+    const dmgBonus = ability ? ability.bonusDamage * (powerMods.has('heavy') ? 2 : 1) : 0;
+    const targetDefence = isAbility && powerMods.has('piercing')
+      ? Math.floor(monster.defence / 2)
+      : monster.defence;
+    let strike = () => 0;
 
     if (mode === 'magic') {
       const saver = CLASSES[character.classId]?.perks?.runeSaver;
@@ -388,8 +411,9 @@
         window.refreshInventoryHud?.(character);
       }
       const magicLevel = levelForXp(character.skills.magic.xp);
-      hit = Math.random() < hitChance(magicLevel + bonuses.magicBonus + (ability?.accuracy || 0), monster.defence);
-      damage = hit ? roll(2 + Math.floor(magicLevel / 10) + (ability?.bonusDamage || 0)) : 0;
+      strike = () => (Math.random() < hitChance(magicLevel + bonuses.magicBonus + accBonus, targetDefence)
+        ? roll(2 + Math.floor(magicLevel / 10) + dmgBonus)
+        : 0);
       window.sfx?.('cast');
       logLine(state, ability
         ? `You surge with magic and cast Wind Strike at the ${monster.name}!`
@@ -405,9 +429,10 @@
       }
       const rangedLevel = levelForXp(character.skills.ranged.xp);
       const style = character.rangedStyle || 'accurate';
-      const accuracy = rangedLevel + bonuses.rangedBonus + (style === 'accurate' ? 2 : 0) + (ability?.accuracy || 0);
-      hit = Math.random() < hitChance(accuracy, monster.defence);
-      damage = hit ? roll(1 + Math.floor(rangedLevel / 5) + (AMMO_BONUS[ammo.itemId] ?? 0) + (ability?.bonusDamage || 0)) : 0;
+      const accuracy = rangedLevel + bonuses.rangedBonus + (style === 'accurate' ? 2 : 0) + accBonus;
+      strike = () => (Math.random() < hitChance(accuracy, targetDefence)
+        ? roll(1 + Math.floor(rangedLevel / 5) + (AMMO_BONUS[ammo.itemId] ?? 0) + dmgBonus)
+        : 0);
       window.sfx?.('shoot');
       logLine(state, ability
         ? `You take careful aim and loose a shot at the ${monster.name}!`
@@ -415,12 +440,32 @@
     } else {
       const attackLevel = levelForXp(character.skills.attack.xp);
       const strengthLevel = levelForXp(character.skills.strength.xp);
-      hit = Math.random() < hitChance(attackLevel + bonuses.attackBonus + (ability?.accuracy || 0), monster.defence);
-      damage = hit ? roll(1 + Math.floor((strengthLevel + bonuses.strengthBonus) / 5) + (ability?.bonusDamage || 0)) : 0;
+      strike = () => (Math.random() < hitChance(attackLevel + bonuses.attackBonus + accBonus, targetDefence)
+        ? roll(1 + Math.floor((strengthLevel + bonuses.strengthBonus) / 5) + dmgBonus)
+        : 0);
       window.sfx?.('swing');
       logLine(state, ability
         ? `You unleash a Power Strike on the ${monster.name}!`
         : `You attack the ${monster.name} (${styleName(character, mode)}).`);
+    }
+
+    let damage = strike();
+    if (isAbility && damage > 0 && powerMods.has('executioner')
+      && node.hp <= Math.floor(node.maxHp * 0.3)) {
+      damage = Math.ceil(damage * 1.5);
+      logLine(state, 'Executioner! You strike the weakened foe with lethal force!');
+    }
+    if (isAbility && powerMods.has('flurry')) {
+      const second = strike();
+      if (second > 0) {
+        const flurryDamage = Math.floor(second * 0.6);
+        damage += flurryDamage;
+        logLine(state, `Flurry! A second strike lands for ${flurryDamage}.`);
+      }
+    }
+    if (isAbility && damage > 0 && powerMods.has('crushing') && Math.random() < 0.25) {
+      state.staggered = true;
+      logLine(state, `Crushing Blow! The ${monster.name} is staggered!`);
     }
 
     animateLunge(state, 'player');
@@ -466,12 +511,21 @@
       return;
     }
     beginTurn(state);
-    state.windCooldown = 4;
+    const healMods = equippedModSet(character, 'heal');
+    state.windCooldown = healMods.has('ironLungs') ? 3 : 4;
     const healed = Math.min(secondWindAmount(state), maxHitpoints(character) - character.currentHp);
     character.currentHp += healed;
     refreshHealth(character);
     window.sfx?.('eat');
     logLine(state, `Second Wind! You steady yourself and recover ${healed} HP.`);
+    if (healMods.has('battleMend')) {
+      state.guarding = true;
+      logLine(state, 'Battle Mend! Your guard is up as the wounds close.');
+    }
+    if (healMods.has('rally') && state.abilityCooldown > 0) {
+      state.abilityCooldown = 0;
+      logLine(state, 'Rally! Your power ability is ready again!');
+    }
     render(state);
     finishPlayerPhase(state);
   }
@@ -573,6 +627,13 @@
   function monsterTurn(state) {
     const { scene, node, monster, character } = state;
     if (state.over || !node.alive) return;
+    if (state.staggered) {
+      state.staggered = false;
+      logLine(state, `The ${monster.name} is staggered and loses its turn!`);
+      render(state);
+      endMonsterTurn(state);
+      return;
+    }
     const bonuses = window.getEquipBonuses?.(character) || { defenceBonus: 0 };
     const defenceLevel = levelForXp(character.skills.defence.xp) + (bonuses.defenceBonus || 0);
     let damage = 0;
@@ -684,7 +745,69 @@
     }
   }
 
+  /* ---------------- Abilities panel (sidebar tab) ---------------- */
+
+  let lastScene = null;
+
+  function skillLabel(skill) {
+    return skill.charAt(0).toUpperCase() + skill.slice(1);
+  }
+
+  function refreshAbilitiesPanel(character) {
+    const panel = document.querySelector('#abilities-panel');
+    if (!panel) return;
+    if (!character) {
+      panel.replaceChildren(makeEl('p', 'abilities-note', 'No character loaded.'));
+      return;
+    }
+    const inFight = Boolean(lastScene?.encounterActive);
+    const children = [];
+    children.push(makeEl('div', 'abilities-title', 'Ability Mods'));
+    children.push(makeEl('p', 'abilities-note', inFight
+      ? "You're mid-fight — mods lock until the encounter ends."
+      : 'Equip one mod per tier. Mods unlock as your Attack, Strength and Defence grow. Swap them any time out of combat.'));
+    const equipped = normalizeAbilityMods(character.abilityMods);
+    [
+      ['power', 'Power ability', 'Power Strike with a sword · Aimed Shot with a bow · Surge with a staff'],
+      ['heal', 'Second Wind', 'Your healing move in every encounter'],
+    ].forEach(([key, title, sub]) => {
+      children.push(makeEl('div', 'abilities-ability', title));
+      children.push(makeEl('p', 'abilities-note', sub));
+      ['tier1', 'tier2', 'tier3'].forEach((tierKey, tierIndex) => {
+        children.push(makeEl('div', 'abilities-tier', `Tier ${tierIndex + 1}`));
+        ABILITY_MODS[key].tiers[tierKey].forEach((mod) => {
+          const level = levelForXp(character.skills[mod.skill]?.xp || 0);
+          const met = level >= mod.level;
+          const isEquipped = equipped[key][tierKey] === mod.id;
+          const card = makeEl('div', isEquipped ? 'abilities-card abilities-card-on' : 'abilities-card');
+          card.append(makeEl('div', 'abilities-card-name', mod.name));
+          card.append(makeEl('div', 'abilities-card-req',
+            `${skillLabel(mod.skill)} ${mod.level} · you: ${level}${met ? ' ✓' : ''}`));
+          card.append(makeEl('div', 'abilities-card-desc', mod.desc));
+          const button = makeEl('button', 'abilities-equip',
+            isEquipped ? 'Equipped — tap to remove' : met ? 'Equip' : 'Locked');
+          button.type = 'button';
+          button.disabled = inFight || (!isEquipped && !met);
+          button.addEventListener('click', () => {
+            if (button.disabled) return;
+            const current = normalizeAbilityMods(character.abilityMods);
+            current[key][tierKey] = isEquipped ? null : mod.id;
+            character.abilityMods = current;
+            window.saveCharacter?.(character);
+            window.sfx?.('click');
+            refreshAbilitiesPanel(character);
+          });
+          card.append(button);
+          children.push(card);
+        });
+      });
+    });
+    panel.replaceChildren(...children);
+  }
+  window.refreshAbilitiesPanel = refreshAbilitiesPanel;
+
   window.startCombat = function (scene, node) {
+    lastScene = scene;
     if (scene?.encounterActive) return;
     if (!node?.monsterId || node.type === 'trainingTarget') {
       overworldStartCombat?.(scene, node);

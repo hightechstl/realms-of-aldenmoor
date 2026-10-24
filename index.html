@@ -1132,6 +1132,17 @@
         text-align: center;
       }
 
+      .abilities-title { color: #f0c77f; font: 700 16px Georgia, serif; margin-bottom: 4px; }
+      .abilities-note { color: #b8b2a4; font: 12px/1.45 system-ui, sans-serif; margin: 2px 0 8px; }
+      .abilities-ability { color: #ffd166; font: 700 14px system-ui, sans-serif; margin: 12px 0 0; }
+      .abilities-tier { color: #8fd0ff; font: 700 11px system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; margin: 8px 0 4px; }
+      .abilities-card { border: 1px solid #ffffff2b; border-radius: 8px; padding: 8px; margin-bottom: 6px; background: #ffffff0d; }
+      .abilities-card-on { border-color: #ffd166; background: #ffd16617; }
+      .abilities-card-name { color: #fff4dc; font: 700 13px system-ui, sans-serif; }
+      .abilities-card-req { color: #9fd49a; font: 11px system-ui, sans-serif; }
+      .abilities-card-desc { color: #d8d2c2; font: 12px/1.4 system-ui, sans-serif; margin: 3px 0 6px; }
+      .abilities-equip { width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #e3d3b0; background: #3a2c1c; color: #ffe9bb; font: 600 12px system-ui, sans-serif; cursor: pointer; }
+      .abilities-equip:disabled { opacity: .45; cursor: default; }
       .encounter-result-title { color: #ffd166; font: 700 26px Georgia, serif; }
       .encounter-result-body { margin: 8px 0 14px; color: #e9e4d8; font: 14px/1.5 system-ui, sans-serif; }
     </style>
@@ -1149,10 +1160,11 @@
           <div><strong>Shift+Click</strong> or the backpack's <strong>Drop</strong> button — drop an item</div>
           <div><strong>Long-press</strong> an item — see its name</div>
           <div><strong>Attack a monster</strong> — turn-based encounter: pick a move each turn</div>
+          <div><strong>Abilities tab</strong> — equip mods that reshape your power ability and Second Wind</div>
           <div><strong>Characters screen</strong> — export a save code to play on another device</div>
         </div>
         <button class="title-enter" id="title-enter" type="button">Enter Aldenmoor</button>
-        <div class="title-footer">Version 1.6.1 · Encounter Combat · Best in landscape on mobile</div>
+        <div class="title-footer">Version 1.7 · Ability Mods · Best in landscape on mobile</div>
       </div>
       <div id="game-column">
         <div id="game" aria-label="Realms of Aldenmoor game world"></div>
@@ -1169,12 +1181,14 @@
           <button class="sidebar-tab" id="quests-tab" type="button" aria-selected="false" aria-controls="quests-panel">Quests</button>
           <button class="sidebar-tab" id="equipment-tab" type="button" aria-selected="false" aria-controls="equipment-panel">Equipment</button>
           <button class="sidebar-tab" id="spellbook-tab" type="button" aria-selected="false" aria-controls="spellbook-panel">Spellbook</button>
+          <button class="sidebar-tab" id="abilities-tab" type="button" aria-selected="false" aria-controls="abilities-panel">Abilities</button>
         </nav>
         <div class="sidebar-content" id="skills-panel"></div>
         <div class="sidebar-content" id="inventory-panel" hidden></div>
         <div class="sidebar-content" id="quests-panel" hidden></div>
         <div class="sidebar-content" id="equipment-panel" hidden></div>
         <div class="sidebar-content" id="spellbook-panel" hidden></div>
+        <div class="sidebar-content" id="abilities-panel" hidden></div>
         <footer class="sidebar-footer" id="sidebar-footer"></footer>
       </aside>
     </div>

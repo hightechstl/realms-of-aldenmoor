@@ -798,6 +798,41 @@ const SMITHING_RECIPES = {
   mithrilArrowheads: { bars: 1, level: 45, xpPerBar: 40, yields: 15, barId: 'mithrilBar' },
 };
 
+const ABILITY_MODS = {
+  power: {
+    tiers: {
+      tier1: [
+        { id: 'precise', name: 'Precise Strike', skill: 'attack', level: 10, desc: "Your ability's accuracy bonus is doubled." },
+        { id: 'heavy', name: 'Heavy Strike', skill: 'strength', level: 10, desc: "Your ability's bonus damage is doubled." },
+      ],
+      tier2: [
+        { id: 'piercing', name: 'Piercing Strike', skill: 'attack', level: 25, desc: "Your ability ignores half the monster's Defence." },
+        { id: 'crushing', name: 'Crushing Blow', skill: 'strength', level: 25, desc: 'Ability hits have a 25% chance to stagger — the monster loses its next turn.' },
+      ],
+      tier3: [
+        { id: 'flurry', name: 'Flurry', skill: 'attack', level: 40, desc: 'Your ability strikes a second time for 60% damage.' },
+        { id: 'executioner', name: 'Executioner', skill: 'strength', level: 40, desc: 'Your ability deals 50% more damage to enemies below 30% HP.' },
+      ],
+    },
+  },
+  heal: {
+    tiers: {
+      tier1: [
+        { id: 'deepBreath', name: 'Deep Breath', skill: 'defence', level: 10, desc: 'Second Wind heals +2 more HP.' },
+        { id: 'ironLungs', name: 'Iron Lungs', skill: 'defence', level: 10, desc: "Second Wind's cooldown drops from 4 turns to 3." },
+      ],
+      tier2: [
+        { id: 'battleMend', name: 'Battle Mend', skill: 'defence', level: 25, desc: "Second Wind also raises your Guard for the monster's next hit." },
+        { id: 'fieldDressing', name: 'Field Dressing', skill: 'defence', level: 25, desc: 'Second Wind heals +1 HP per 10 Defence levels.' },
+      ],
+      tier3: [
+        { id: 'secondHeart', name: 'Second Heart', skill: 'defence', level: 40, desc: 'Second Wind heals at least 25% of your max HP.' },
+        { id: 'rally', name: 'Rally', skill: 'defence', level: 40, desc: "Second Wind also resets your power ability's cooldown." },
+      ],
+    },
+  },
+};
+
 const INTERIOR_ROOMS = {
   bank: { x: 110, y: 10, width: 12, height: 9, doorX: 115, exterior: { x: 18, y: 14 }, doorTile: { x: 18, y: 13 } },
   store: { x: 110, y: 30, width: 12, height: 9, doorX: 115, exterior: { x: 22, y: 14 }, doorTile: { x: 22, y: 13 } },

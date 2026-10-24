@@ -1211,11 +1211,11 @@
     document.querySelector('.smithing-panel')?.remove();
     const sidebar = document.querySelector('#sidebar');
     const tabs = document.querySelector('.sidebar-tabs');
-    const savedTab = ['skills', 'inventory', 'quests', 'equipment', 'spellbook'].find((name) => (
+    const savedTab = ['skills', 'inventory', 'quests', 'equipment', 'spellbook', 'abilities'].find((name) => (
       document.querySelector(`#${name}-tab`)?.getAttribute('aria-selected') === 'true'
     )) || 'skills';
     tabs.hidden = true;
-    ['skills', 'inventory', 'quests', 'equipment', 'spellbook'].forEach((name) => {
+    ['skills', 'inventory', 'quests', 'equipment', 'spellbook', 'abilities'].forEach((name) => {
       document.querySelector(`#${name}-panel`).hidden = true;
     });
 
@@ -1227,7 +1227,7 @@
     function close() {
       panel.remove();
       tabs.hidden = false;
-      ['skills', 'inventory', 'quests', 'equipment', 'spellbook'].forEach((name) => {
+      ['skills', 'inventory', 'quests', 'equipment', 'spellbook', 'abilities'].forEach((name) => {
         document.querySelector(`#${name}-panel`).hidden = name !== savedTab;
         document.querySelector(`#${name}-tab`).setAttribute('aria-selected', String(name === savedTab));
       });
@@ -1951,13 +1951,14 @@
     tab.addEventListener('click', () => {
       window.sfx?.('click');
       const selected = tab.id.replace('-tab', '');
-      ['skills', 'inventory', 'quests', 'equipment', 'spellbook'].forEach((panelName) => {
+      ['skills', 'inventory', 'quests', 'equipment', 'spellbook', 'abilities'].forEach((panelName) => {
         document.querySelector(`#${panelName}-panel`).hidden = panelName !== selected;
         document.querySelector(`#${panelName}-tab`).setAttribute('aria-selected', String(panelName === selected));
       });
       window.refreshQuestJournal?.(currentCharacter);
       window.refreshEquipmentHud?.(currentCharacter);
       window.refreshSpellbookHud?.(currentCharacter);
+      window.refreshAbilitiesPanel?.(currentCharacter);
     });
   });
 
