@@ -31,7 +31,9 @@
       }
 
       #layout {
-        position: relative;
+        position: absolute;
+        left: 50%;
+        top: 50%;
         display: flex;
         width: 1120px;
         height: 690px;
@@ -880,7 +882,7 @@
         var layout = document.getElementById('layout');
         function fitLayout() {
           var s = Math.min(1, window.innerWidth / 1120, window.innerHeight / 690);
-          layout.style.transform = 'scale(' + s + ')';
+          layout.style.transform = 'translate(-50%, -50%) scale(' + s + ')';
         }
         window.addEventListener('resize', fitLayout);
         window.addEventListener('orientationchange', fitLayout);
