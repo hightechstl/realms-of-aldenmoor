@@ -383,6 +383,7 @@
     const quantity = all ? slot.qty : 1;
     if (!removeItemFromSlot(character, index, quantity)) return;
     addItem(character, 'coins', price * quantity);
+    window.sfx?.('coin');
     renderPanel(character);
   }
 
@@ -393,6 +394,7 @@
     }
     removeItem(character, 'coins', price);
     addItem(character, itemId, 1);
+    window.sfx?.('coin');
     renderPanel(character);
   }
 

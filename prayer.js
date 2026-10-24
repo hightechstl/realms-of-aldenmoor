@@ -11,6 +11,7 @@
     for (let index = 0; index < amount; index += 1) {
       window.handlePrayerXp?.(addXp(character, 'prayer', 4.5));
     }
+    window.sfx?.('pray');
     window.addGameMessage?.(buryAll ? `You bury ${amount} bones.` : 'You bury the bones.');
     return true;
   }

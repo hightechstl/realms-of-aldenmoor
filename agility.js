@@ -92,6 +92,7 @@
     const failChance = Math.max(0.02, 0.22 - (level - 1) * 0.015);
     if (Math.random() < failChance) {
       scene.cancelNodeAction();
+      window.sfx?.('slip');
       window.addGameMessage?.(`You slip on the ${node.displayName.toLowerCase()} and fail to cross.`);
       return;
     }
@@ -103,6 +104,7 @@
       if (courseStep >= OBSTACLES.length) {
         courseStep = 0;
         awardAgilityXp(scene, character, LAP_BONUS_XP);
+        window.sfx?.('quest');
         window.addGameMessage?.(`Lap complete! Bonus ${LAP_BONUS_XP} Agility XP.`);
       } else {
         window.addGameMessage?.(`You cross the ${node.displayName.toLowerCase()}. Next up: the ${OBSTACLES[courseStep].name.toLowerCase()}.`);

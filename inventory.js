@@ -36,6 +36,7 @@ function handleBackpackItemClick(character, index) {
     }
     const result = addXp(character, 'fletching', 10);
     window.handleCombatXp?.('fletching', result, window.activePrayerScene?.());
+    window.sfx?.('craft');
     window.addGameMessage?.('You fletch 15 arrow shafts.');
     return true;
   }
@@ -51,6 +52,7 @@ function handleBackpackItemClick(character, index) {
     }
     const result = addXp(character, 'fletching', 15);
     window.handleCombatXp?.('fletching', result, window.activePrayerScene?.());
+    window.sfx?.('craft');
     window.addGameMessage?.('You fletch 15 bronze arrows.');
     return true;
   }
@@ -66,6 +68,7 @@ function handleBackpackItemClick(character, index) {
     }
     const result = addXp(character, 'fletching', 20);
     window.handleCombatXp?.('fletching', result, window.activePrayerScene?.());
+    window.sfx?.('craft');
     window.addGameMessage?.('You fletch 15 iron arrows.');
     return true;
   }
@@ -81,6 +84,7 @@ function handleBackpackItemClick(character, index) {
     }
     const result = addXp(character, 'fletching', 25);
     window.handleCombatXp?.('fletching', result, window.activePrayerScene?.());
+    window.sfx?.('craft');
     window.addGameMessage?.('You fletch 15 steel arrows.');
     return true;
   }

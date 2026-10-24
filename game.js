@@ -104,6 +104,7 @@
     }
 
     showLevelUpBanner(skillName, level) {
+      window.sfx?.('levelup');
       const banner = this.add.text(
         this.player.x,
         this.player.y - 58,
@@ -720,6 +721,7 @@
           removeItem(currentCharacter, 'ironOre', 1);
           removeItem(currentCharacter, 'coal', 1);
           addItem(currentCharacter, 'steelBar', 1);
+          window.sfx?.('smith');
           const steelResult = addXp(currentCharacter, 'smithing', 17.5);
           this.afterActionXp('smithing', steelResult);
           this.scheduleNextAction();
@@ -738,6 +740,7 @@
             window.addGameMessage?.('The iron ore is too impure and the bar fails to form.');
           } else {
             addItem(currentCharacter, 'ironBar', 1);
+            window.sfx?.('smith');
             const ironResult = addXp(currentCharacter, 'smithing', 12.5);
             this.afterActionXp('smithing', ironResult);
           }
@@ -751,6 +754,7 @@
         removeItem(currentCharacter, 'copperOre', 1);
         removeItem(currentCharacter, 'tinOre', 1);
         addItem(currentCharacter, 'bronzeBar', 1);
+        window.sfx?.('smith');
         const result = addXp(currentCharacter, 'smithing', 6.2);
         this.afterActionXp('smithing', result);
         this.scheduleNextAction();
@@ -769,6 +773,7 @@
         removeItem(currentCharacter, rawFoodId, 1);
         if (Math.random() < burnChance) {
           addItem(currentCharacter, 'burntFish', 1);
+          window.sfx?.('burn');
           window.addGameMessage?.('You burn the fish.');
         } else {
           const cookedId = {
@@ -779,6 +784,7 @@
             rawBass: 'cookedBass',
           }[rawFoodId];
           addItem(currentCharacter, cookedId, 1);
+          window.sfx?.('cook');
           const baseXp = {
             rawShrimp: 30,
             rawTrout: 70,
@@ -816,6 +822,8 @@
           : node.type === 'tree' ? 25
             : node.itemId === 'rawShrimp' ? 10 : 50);
       const result = addXp(currentCharacter, node.skill, baseXp);
+      const gatherSounds = { tree: 'chop', oak: 'chop', ore: 'mine', fishing: 'splash' };
+      if (gatherSounds[node.type]) window.sfx?.(gatherSounds[node.type]);
       this.afterActionXp(node.skill, result);
 
       if (node.type !== 'fishing') {
@@ -1247,6 +1255,7 @@
         }
         const result = addXp(character, 'smithing', recipe.xpPerBar * recipe.bars);
         made += 1;
+        window.sfx?.('smith');
         refreshSkillsHud(character);
         showXpDrop(result.gained, 'smithing');
         if (result.leveledUp) {
@@ -1442,6 +1451,7 @@
     window.updateGroundItemPresentation?.(scene, node, node.groundItems[0]);
     scene.nodes.push(node);
     scene.tileInteractables.set(scene.tileKey(node.tile), node);
+    window.sfx?.('drop');
     window.addGameMessage?.(`You drop the ${ITEMS[removed.itemId].name.toLowerCase()}.`);
   }
 
@@ -1889,6 +1899,7 @@
 
   document.querySelectorAll('.sidebar-tab').forEach((tab) => {
     tab.addEventListener('click', () => {
+      window.sfx?.('click');
       const selected = tab.id.replace('-tab', '');
       ['skills', 'inventory', 'quests', 'equipment', 'spellbook'].forEach((panelName) => {
         document.querySelector(`#${panelName}-panel`).hidden = panelName !== selected;

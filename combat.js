@@ -518,7 +518,9 @@
       if (Math.random() < combatHitChance(rangedLevel + rangedBonus + accuracyBonus, monster.defence)) {
         damage = randomDamage(1 + Math.floor(rangedLevel / 5) + rangedAmmoBonus(character));
       }
+      window.sfx?.('shoot');
       showHitSplat(scene, target.marker, damage);
+      window.sfx?.(damage > 0 ? 'hit' : 'swing');
       if (damage > 0) {
         target.hp = Math.max(0, target.hp - damage);
         const rangedXp = addXp(character, 'ranged', damage * (style === 'longrange' ? 2 : 4));
@@ -584,7 +586,9 @@
       if (Math.random() < combatHitChance(magicLevel + magicBonus, monster.defence)) {
         damage = randomDamage(2 + Math.floor(magicLevel / 10));
       }
+      window.sfx?.('cast');
       showHitSplat(scene, target.marker, damage);
+      window.sfx?.(damage > 0 ? 'hit' : 'swing');
       if (damage > 0) {
         target.hp = Math.max(0, target.hp - damage);
         if (target.type !== 'trainingTarget') updateGoblinHpBar(target);
@@ -675,6 +679,7 @@
       monsterNode.attackCount = (monsterNode.attackCount || 0) + 1;
       if (monsterNode.attackCount % 3 !== 0) return false;
       const breathDamage = Phaser.Math.Between(2, 4);
+      window.sfx?.('firebreath');
       window.addGameMessage?.('Emberfang rears back and breathes fire!');
       showHitSplat(scene, scene.player, breathDamage);
       character.currentHp = Math.max(0, character.currentHp - breathDamage);
@@ -695,6 +700,7 @@
         damage = randomDamage(monster.maxHit);
       }
       showHitSplat(scene, scene.player, damage);
+      if (damage > 0) window.sfx?.('hurt');
       if (damage > 0) {
         character.currentHp = Math.max(0, character.currentHp - damage);
         refreshHealth(character);
@@ -721,6 +727,7 @@
       ));
     }
     showHitSplat(scene, goblin.marker, playerDamage);
+    window.sfx?.(playerDamage > 0 ? 'hit' : 'swing');
     if (playerDamage > 0) {
       goblin.hp = Math.max(0, goblin.hp - playerDamage);
       const styleXp = playerDamage * 4;
@@ -750,6 +757,7 @@
       goblinDamage = randomDamage(monster.maxHit);
     }
     showHitSplat(scene, scene.player, goblinDamage);
+    if (goblinDamage > 0) window.sfx?.('hurt');
     if (goblinDamage > 0) {
       character.currentHp = Math.max(0, character.currentHp - goblinDamage);
       refreshHealth(character);
@@ -770,6 +778,7 @@
 
   function killGoblin(scene, goblin, character) {
     stopCombat(scene);
+    window.sfx?.(goblin.monsterId === 'emberfang' ? 'bossdeath' : 'death');
     scene.currentAction = null;
     scene.actionStarted = false;
     scene.tileInteractables.delete(scene.tileKey(goblin.tile));
@@ -835,6 +844,7 @@
       drops.push({ itemId: drop.itemId, qty });
     });
     if (!drops.length) return;
+    if (drops.some((drop) => drop.itemId === 'coins')) window.sfx?.('coin');
 
     const tile = { ...goblin.tile };
     const node = {
@@ -882,6 +892,7 @@
       window.updateGroundItemPresentation?.(scene, node, nextDrop);
       return;
     }
+    window.sfx?.('pickup');
     window.addGameMessage?.(`You take the ${node.displayName.toLowerCase()}.`);
     scene.tileInteractables.delete(scene.tileKey(node.tile));
     scene.nodes = scene.nodes.filter((entry) => entry !== node);
@@ -897,6 +908,7 @@
     scene.actionStarted = false;
     scene.path = [];
     scene.moving = false;
+    window.sfx?.('playerdeath');
     window.addGameMessage?.('You have died!', true);
     scene.cameras.main.fadeOut(250, 0, 0, 0);
     scene.cameras.main.once('camerafadeoutcomplete', () => {
@@ -920,6 +932,7 @@
     if (!removeInventorySlot(character, index)) return false;
     character.currentHp += restored;
     refreshHealth(character);
+    window.sfx?.('eat');
     window.addGameMessage?.(`You eat the ${ITEMS[slot.itemId].name.toLowerCase()}. It heals ${restored}.`);
     return true;
   }

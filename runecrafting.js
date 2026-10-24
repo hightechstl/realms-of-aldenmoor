@@ -99,6 +99,7 @@
       window.refreshInventoryHud?.(character);
       const scene = window.activePrayerScene?.();
       if (scene) window.handleCombatXp?.('runecrafting', result, scene);
+      window.sfx?.('cast');
       window.addGameMessage?.(`You craft the essence into ${produced} ${ITEMS[runeId].name.toLowerCase()}.`);
       render();
     }

@@ -243,6 +243,7 @@
       }
       character.quests.firstErrand = 2;
       saveCharacter(character);
+      window.sfx?.('quest');
       window.addGameMessage?.('Quest complete: First Errand — 60 coins and a Bronze pickaxe.', 'gold');
       window.openDialogueInterface(
         node.displayName,
@@ -307,6 +308,7 @@
       }
       setStage(character, 'goblinTrouble', 2);
       saveCharacter(character);
+      window.sfx?.('quest');
       window.addGameMessage?.('Quest complete: Goblin Trouble — 150 coins.', 'gold');
       window.openDialogueInterface(
         node.displayName,
@@ -372,6 +374,7 @@
       }
       setStage(character, 'ironForDepths', 2);
       saveCharacter(character);
+      window.sfx?.('quest');
       window.addGameMessage?.('Quest complete: Iron for the Depths — an Iron sword and 100 coins.', 'gold');
       window.openDialogueInterface(
         node.displayName,
@@ -450,6 +453,7 @@
       addXp(character, 'fishing', 150);
       setStage(character, 'feedingVillage', 2);
       saveCharacter(character);
+      window.sfx?.('quest');
       window.addGameMessage?.('Quest complete: Feeding the Village — 200 coins and Fishing experience.', 'gold');
       window.openDialogueInterface(
         node.displayName,
@@ -513,6 +517,7 @@
       addXp(character, 'attack', 250);
       setStage(character, 'beastWastes', 2);
       saveCharacter(character);
+      window.sfx?.('quest');
       window.addGameMessage?.('Quest complete: The Beast of the Wastes — 500 coins and Attack experience.', 'gold');
       window.openDialogueInterface(
         node.displayName,

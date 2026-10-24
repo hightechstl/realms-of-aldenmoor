@@ -393,6 +393,7 @@
     scene.path = [];
     scene.moving = false;
     scene.tweens.killTweensOf(scene.player);
+    window.sfx?.('splash');
     scene.currentTile = destination;
     scene.character.worldTile = { ...destination };
     scene.player.setPosition(destination.x * 32 + 16, destination.y * 32 + 16);
