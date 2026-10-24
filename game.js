@@ -1820,8 +1820,22 @@
           showStatus('Automatic copy did not work — the code is selected, copy it by hand.', false);
         }
       });
-      body.append(code, copy);
-      showStatus('Keep this code private: anyone with it can load your save.', false);
+      const download = document.createElement('button');
+      download.type = 'button';
+      download.className = 'begin-button save-transfer-button';
+      download.textContent = 'Download code as a file';
+      download.addEventListener('click', () => {
+        const blob = new Blob([code.value], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'aldenmoor-save.txt';
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        showStatus('Saved as aldenmoor-save.txt. Move it to iCloud Drive or Files, then use "Or pick the code file" when importing on the other device.', false);
+      });
+      body.append(code, copy, download);
+      showStatus('Keep this code private: anyone with it can load your save. Moving it as a file is the safest route — pasted codes can get clipped.', false);
     });
 
     importButton.addEventListener('click', () => {
@@ -1868,7 +1882,41 @@
         confirmBox.append(summaryText, confirm, cancel);
         body.append(confirmBox);
       });
-      body.append(code, load);
+      const checkPaste = () => {
+        const value = code.value.trim();
+        body.querySelectorAll('.save-transfer-confirm').forEach((el) => el.remove());
+        if (!value) return;
+        try {
+          const clean = window.parseSaveCode(value);
+          const summary = window.summarizeSaveStore(clean);
+          const names = summary.characters.map((c) => c.name).join(', ');
+          showStatus(summary.characters.length
+            ? `✓ That code is whole — it holds ${names}. Tap "Load this save" to bring it in.`
+            : '✓ That code is whole, but it holds no characters.', false);
+        } catch (error) {
+          showStatus(`${error.message} A whole code starts with ALDENMOOR-SAVE: — if the paste is missing its start or its end, the copy got cut. The file option below never clips.`, true);
+        }
+      };
+      code.addEventListener('input', checkPaste);
+      const fileLabel = document.createElement('p');
+      fileLabel.className = 'town-note';
+      fileLabel.textContent = 'Or pick the code file:';
+      const file = document.createElement('input');
+      file.type = 'file';
+      file.accept = '.txt,text/plain';
+      file.className = 'save-file-input';
+      file.setAttribute('aria-label', 'Pick a save code file');
+      file.addEventListener('change', () => {
+        const picked = file.files?.[0];
+        if (!picked) return;
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+          code.value = String(reader.result || '');
+          checkPaste();
+        });
+        reader.readAsText(picked);
+      });
+      body.append(code, load, fileLabel, file);
     });
 
     return section;

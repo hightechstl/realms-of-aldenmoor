@@ -434,8 +434,10 @@ function sanitizeImportedSlot(slot) {
 function parseSaveCode(code) {
   if (typeof code !== 'string' || !code.trim()) throw new Error('Paste a save code first.');
   let text = code.trim();
-  if (text.startsWith(SAVE_EXPORT_PREFIX)) text = text.slice(SAVE_EXPORT_PREFIX.length);
-  text = text.replace(/\s+/g, '');
+  const marker = text.indexOf(SAVE_EXPORT_PREFIX);
+  if (marker >= 0) text = text.slice(marker + SAVE_EXPORT_PREFIX.length);
+  text = text.replace(/[^A-Za-z0-9+/=]/g, '');
+  if (text.startsWith('ALDENMOORSAVE')) text = text.slice('ALDENMOORSAVE'.length);
   if (!text) throw new Error('That save code is empty.');
   let payload;
   try {
