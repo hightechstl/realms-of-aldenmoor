@@ -153,6 +153,10 @@ const PALETTE = {
   Q: '#8bd5e8',
   M: '#8296cb',
   V: '#c43b5b',
+  e: '#3f9e4d',
+  d: '#2e7d32',
+  b: '#3d67a6',
+  o: '#e67e22',
 };
 
 const ICONS = {
@@ -272,6 +276,222 @@ function createItemIconElement(itemId, className = 'item-icon') {
   image.draggable = false;
   return image;
 }
+
+// ---- Visual pass: skill icons, NPC avatars, and world sprites ----
+// The same 12x12 pixel-art system as the item icons, extended so the
+// game reads in pictures instead of words wherever it can.
+const SKILL_ICONS = {
+  attack: [".....KK.....", "....KHHK....", "...KHHHHK...", "..KHHHHHHK..", ".KHHHHHHHHK.", "....KHHK....", "....KHHK....", "....KHHK....", "....KHHK....", "....KHHK....", "...KK..KK...", "............"],
+  strength: ["............", "....KKKK....", "..KKFFFFKK..", ".KFFKFFKFFK.", "KFFFFFFFFFFK", "KFFKFFFFFFFK", "KFFFFFFFFFFK", ".KFFFFFFFFK.", ".KFFFKFFFFK.", "..KKFFFFKK..", "....KKKK....", "............"],
+  defence: ["............", "....KKKK....", "..KKHHHHKK..", ".KHHHHHHHHK.", ".KHHHSHHHHK.", ".KHHHSSHHHK.", ".KHHHSHHHHK.", ".KHHHHHHHHK.", "..KHHHHHHK..", "...KHHHHK...", "....KKKK....", "............"],
+  hitpoints: ["............", "............", ".KKK..KKK...", "KVVVK.KVVVK.", "KVVVVVVVVVK.", "KVVVVVVVVK..", ".KVVVVVVK...", "..KVVVVK....", "...KVVK.....", "....KK......", "............", "............"],
+  mining: ["............", "............", "..KKKKKKK...", ".KBBBBBBK...", "KBBBAAABKK..", ".KKKKK.K....", ".....K.K....", ".....K.K....", "....K.K.....", "....K.K.....", "...KK.KK....", "............"],
+  smithing: ["............", "............", "............", ".KKKKKKKKK..", "KSSSSSSSSSK.", "KKSSSSSSKK..", "...KSSSK....", "...KSSSK....", "...KSSSK....", "..KSSSSSK...", ".KKKKKKKKK..", "............"],
+  woodcutting: [".....KKKKK..", "....KHHHHHK.", "...KHHKKKKK.", "...KK.KUUUK.", "......KUK...", ".....KUK....", "....KUK.....", "...KUK......", "..KUK.......", ".KUK........", ".KK.........", "............"],
+  fletching: ["............", "............", ".........KK.", "........KBBK", ".......KBBK.", "......KBBK..", "..KKKKKKK...", "..KUUUUU....", "..KKKKKKK...", "............", "............", "............"],
+  fishing: ["............", "............", "............", "...KKKK.....", "..KRRRKK....", ".KRRHHRRK...", "KRRRRRRRRK..", ".KRRHHRRK...", "..KRRRKK....", "...KKKK.....", "............", "............"],
+  cooking: ["............", ".......C....", "......CCC...", "......CFC...", ".....CFFC...", ".....CFYC...", "....CFFYC...", "....CFYYC...", "...CFFYYFC..", "...CFFFFFFC.", "....CCCC....", "............"],
+  ranged: ["............", "....KK......", "..KKUUK.....", ".KU..KK.....", "KU....K.....", "KU....K.....", "KU....K.....", ".KU..KK.....", "..KKUUK.....", "....KK......", "............", "............"],
+  magic: ["....QQ......", "...KQQK.....", "....KK......", "..KUK.......", "...KUK......", "....KUK.....", ".....KUK....", "......KUK...", ".......KUK..", "........KK..", "............", "............"],
+  runecrafting: ["............", "............", ".....KK.....", "....KQQK....", "...KQQQQK...", "..KQQWQQQK..", "..KQQQQQQK..", "...KQQQQK...", "....KQQK....", ".....KK.....", "............", "............"],
+  prayer: ["............", ".....KK.....", "....KGGK....", "....KGGK....", ".KKKGGKKK...", "KGGGGGGGGGGK", ".KKKGGKKK...", "....KGGK....", "....KGGK....", "....KGGK....", ".....KK.....", "............"],
+  thieving: ["............", "............", "............", ".KKKKKKKKK..", "KXXXXXXXXXXK", "KXWWKXXKWWXK", "KXXXXXXXXXXK", ".KXXXXXXXXK.", "..KKKKKKKK..", "............", "............", "............"],
+  agility: ["............", "............", "....KKK.....", "...KLLLK....", "...KLLLK....", "...KLLLK....", "...KLLLKKK..", "...KLLLLLLK.", "..KLLLLLLLK.", ".KKKKKKKKKK.", "KWWWWWWWWWWK", "KKKKKKKKKKKK"],
+};
+
+const AVATARS = {
+  banker: ["............", "...KKKKKK...", "..KDDDDDDK..", "..DFFFFFFD..", "..DFKFFKFD..", "..DFFFFFFD..", "...FFFFFF...", "..KEEGGEEK..", "..KEEGGEEK..", ".KEEEGGEEEK.", ".KEEEGGEEEK.", "............"],
+  shopkeeper: ["............", "...KKKKKK...", "..KLLLLLLK..", "..LFFFFFFL..", "..LFKFFKFL..", "..LFFFFFFL..", "...FFFFFF...", "..KAAAAAAK..", ".KAAWWWWAAK.", ".KAAWWWWAAK.", "..KAAAAAAK..", "............"],
+  fishmonger: ["............", "...KKKKKK...", "..KbbbbbbK..", "..KFFFFFFK..", "..KFKFFKFK..", "..KFFFFFFK..", "...FFFFFF...", "..KbbbbbbK..", ".KbKQQQQKbK.", ".KbKQQQQKbK.", "..KbbbbbbK..", "............"],
+  wizard: [".....KK.....", "....KMMK....", "...KMMMMK...", "..KMMMMMMK..", ".KWWWWWWWWK.", "..KFFFFFFK..", "..WFKFFKFW..", "..WWFFFFWW..", "...WWWWWW...", "..KMMMMMMK..", ".KMMMMMMMMK.", "............"],
+  elderMaren: ["....KKKK....", "..KKWWWWKK..", ".KWWWWWWWWK.", ".KWFFFFFFWK.", "..WFKFFKFW..", "..WFFFFFFW..", "...FFFFFF...", "..KVVVVVVK..", ".KVKGGGGKVK.", ".KVVVVVVVVK.", "..KVVVVVVK..", "............"],
+  mineForeman: ["............", "..KKKKKKKK..", ".KGGGGGGGGK.", "..KFFFFFFK..", "..KFKFFKFK..", "..KFFFFFFK..", "...KFFFFK...", "..KooooooK..", ".KoKSSSSKoK.", ".KoooooooK..", "..KooooooK..", "............"],
+  captainWren: ["............", "..KKKKKKKK..", ".KbbbbbbbbK.", "..KGFFFFFK..", "..KFKFFKFK..", "..DFFFFFFD..", "..KDDDDDDK..", "...KbbbbK...", "..KbbbbbbK..", ".KbKGGGGKbK.", "..KbbbbbbK..", "............"],
+  citizen: ["............", "...KKKKKK...", "..KDDDDDDK..", "..DFFFFFFD..", "..DFKFFKFD..", "..DFFFFFFD..", "...FFFFFF...", "..KRRRRRRK..", ".KRKRRRRKRK.", "..KRRRRRRK..", "..KRRRRRRK..", "............"],
+  citizen2: ["............", "...KKKKKK...", "..KXXXXXXK..", "..XFFFFFFX..", "..XFKFFKFX..", "..XFFFFFFX..", "...FFFFFF...", "..KeeeeeeK..", ".KeKEEEEKeK.", "..KeeeeeeK..", "..KeeeeeeK..", "............"],
+  guard: ["............", "..KKKKKKKK..", ".KSSSSSSSSK.", ".KSHHHHHHSK.", "..KFFFFFFK..", "..KFKFFKFK..", "..KFFFFFFK..", "...KFFFFK...", "..KRRRRRRK..", ".KRKSSSSKRK.", "..KRRRRRRK..", "............"],
+};
+
+const WORLD_ICONS = {
+  tree: ["............", "....KKKK....", "..KKeeeeKK..", ".KeeKeeeeeK.", "KeKeeeeeeeeK", ".KeeKeeeeK..", "..KKeeeeKK..", "....KKKK....", "....KLLK....", "....KLLK....", "...KLLLK....", "............"],
+  oakTree: ["............", "....KKKK....", "..KKddddKK..", ".KddKdddddK.", "KdKddddddddK", ".KddKddddK..", "..KKddddKK..", "....KKKK....", "....KOOK....", "....KOOK....", "...KOOK.....", "............"],
+  fishingSpot: ["............", "............", "..KFFFK.....", ".KFFFFFK....", "KFFKFFFFFK..", ".KFFFFFK....", "..KFFFK.....", "............", ".KbK.bKbK...", "..bKbKbKb...", "............", "............"],
+  range: ["............", ".....CC.....", "....CFFC....", "....CFYC....", "...KXXXXK...", "..KXXXXXXK..", "..KXKXXKXK..", "..KXXXXXXK..", "...KKKKKK...", "..KLLLLLLK..", "............", "............"],
+  furnace: ["............", "..KKKKKKKK..", ".KDDDDDDDDK.", "KDCKKKKKKCDK", "KDCKFFFFKCDK", "KDCKFYYFKCDK", ".KDKFFFKDK..", "..KKKKKKKK..", ".KDDDDDDDDK.", "KDDDDDDDDDDK", "KKKKKKKKKKKK", "............"],
+  anvil: ["............", "............", "............", ".KKKKKKKKK..", "KSSSSSSSSSK.", "KKSSSSSSKK..", "...KSSSK....", "...KSSSK....", "...KSSSK....", "..KSSSSSK...", ".KKKKKKKKK..", "............"],
+  altar: ["............", ".....KF.....", ".....FY.....", "....KWWK....", "....KWWK....", "...KKKKKK...", "..KSSSSSSK..", "..KSKSSKSK..", "..KSSSSSSK..", ".KSSSSSSSSK.", "KSSSSSSSSSSK", "KKKKKKKKKKKK"],
+  runeAltar: ["............", ".....KF.....", ".....FQ.....", "....KQQK....", "....KQQK....", "...KKKKKK...", "..KMMMMMMK..", "..KMKMMKMK..", "..KMMMMMMK..", ".KMMMMMMMMK.", "KMMMMMMMMMMK", "KKKKKKKKKKKK"],
+  door: ["...KKKKKK...", "..KDDDDDDK..", ".KDLLLLLLDK.", ".KDLLKLLLDK.", ".KDLLLLLLDK.", ".KDLLLLLDGK.", ".KDLLLLLLDK.", ".KDLLLLLLDK.", ".KDLLLLLLDK.", "..KDDDDDDK..", "...KKKKKK...", "............"],
+  boat: ["............", ".....KK.....", "....KWK.....", "....KWK.....", "...KWWWK....", "....KWK.....", "............", ".KKKKKKKKK..", "KLLLLLLLLLLK", ".KDLLLLLLDK.", "..KKKKKKKK..", ".b.bb.bb.b.."],
+  chest: ["............", "............", "..KKKKKKKK..", ".KAAAAAAAAK.", "KAAAKKKKAAAK", "KAAAKGGKAAAK", "KAAAKGGKAAAK", ".KAAAAAAAAK.", "..KKKKKKKK..", "............", "............", "............"],
+  net: ["............", ".KWKWKWKWK..", "..WKWKWKWK..", ".KWKWKWKWK..", "..WKWKWKWK..", ".KWKWKWKWK..", "..WKWKWKWK..", ".KWKWKWKWK..", "..WKWKWKWK..", ".KWKWKWKWK..", "............", "............"],
+  stones: ["............", "............", "............", "....KKKK....", "..KKSSSSKK..", ".KSSHHSSSSK.", "KSSSSSSSSSSK", "KSSKSSSSKSSK", ".KSSSSSSSSK.", "..KKKKKKKK..", "............", "............"],
+  wall: ["............", ".KKKKKKKKKK.", "KSKSSKSKSSKK", "KKKKKKKKKKK.", "KSSKSKSSKSKK", "KKKKKKKKKKK.", "KSKSSKSKSSKK", "KKKKKKKKKKK.", "KSSKSKSSKSKK", ".KKKKKKKKKK.", "............", "............"],
+  rope: ["............", "...KKKKKK...", "..KUUKUUUK..", ".KUUK.KUUK..", ".KUK...KUK..", "..KUUKUUUK..", "...KKKKKK...", ".....KUK....", "....KUK.....", "...KUK......", "..KK........", "............"],
+  stile: ["............", "..K..KK..K..", ".KLK.KLK.KL.", ".KLKKKLKKKL.", "..K..KK..K..", "..K.KKKK.K..", ".KLK.KLK.KL.", ".KLKKKLKKKL.", "..K..KK..K..", "............", "............", "............"],
+  stump: ["............", "............", "............", "............", "...KKKKKK...", "..KOOOOOOK..", ".KOKKOOKKOK.", ".KOOOOOOOOK.", "..KOOOOOOK..", "...KKKKKK...", "............", "............"],
+  backpack: [".....KK.....", "....KAAK....", "...KAAAAK...", "..KAAAAAAK..", ".KAAKAAKAAK.", ".KAAAAAAAAK.", "KAAAKKKKAAAK", "KAAAAAAAAAAA", "KAAAKGGKAAAK", "KAAAAAAAAAAA", ".KKKKKKKKKK.", "............"],
+  scroll: ["............", "...KKKKKK...", "..KNNNNNNK..", ".KNKNNNNKNK.", "KNKNNNNNNKNK", "KNKNNVVNNKNK", "KNKNNVVNNKNK", "KNKNNNNNNKNK", ".KNKNNNNKNK.", "..KNNNNNNK..", "...KKKKKK...", "............"],
+};
+
+const pixelArtCaches = new Map();
+
+function makePixelArt(drawing, key, scene = null) {
+  if (!drawing || drawing.length !== 12 || drawing.some((row) => row.length !== 12)) {
+    throw new Error(`Pixel art ${key} must be a 12x12 pixel map.`);
+  }
+  let cached = pixelArtCaches.get(key);
+  if (!cached) {
+    const pixels = document.createElement('canvas');
+    pixels.width = 12;
+    pixels.height = 12;
+    const context = pixels.getContext('2d');
+    if (!context) throw new Error('Could not create the pixel art drawing context.');
+    drawing.forEach((row, y) => {
+      [...row].forEach((pixel, x) => {
+        if (!Object.hasOwn(PALETTE, pixel)) {
+          throw new Error(`Unknown palette color "${pixel}" in pixel art ${key}.`);
+        }
+        const color = PALETTE[pixel];
+        if (color) {
+          context.fillStyle = color;
+          context.fillRect(x, y, 1, 1);
+        }
+      });
+    });
+    const scaled = document.createElement('canvas');
+    scaled.width = 48;
+    scaled.height = 48;
+    const scaledContext = scaled.getContext('2d');
+    if (!scaledContext) throw new Error('Could not create the scaled pixel art context.');
+    scaledContext.imageSmoothingEnabled = false;
+    scaledContext.drawImage(pixels, 0, 0, 48, 48);
+    cached = { dataUrl: scaled.toDataURL(), pixels, textureKey: `dreamgame-${key}` };
+    pixelArtCaches.set(key, cached);
+  }
+  if (scene && !scene.textures.exists(cached.textureKey)) {
+    const texture = scene.textures.addCanvas(cached.textureKey, cached.pixels);
+    if (!texture) throw new Error(`Could not register Phaser texture for ${key}.`);
+    texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  }
+  return cached;
+}
+
+function pixelArtElement(drawing, key, className) {
+  if (!drawing) return null;
+  const art = makePixelArt(drawing, key);
+  const image = document.createElement('img');
+  image.className = className;
+  image.src = art.dataUrl;
+  image.alt = '';
+  image.draggable = false;
+  return image;
+}
+
+function createSkillIconElement(skill, className = 'skill-icon') {
+  return pixelArtElement(SKILL_ICONS[skill], `skill-${skill}`, className);
+}
+
+function createWorldIconElement(name, className = 'tab-icon') {
+  return pixelArtElement(WORLD_ICONS[name], `world-${name}`, className);
+}
+
+function createAvatarElement(avatarId, className = 'dialogue-avatar') {
+  return pixelArtElement(AVATARS[avatarId], `avatar-${avatarId}`, className);
+}
+
+const AVATAR_BY_NPC_ID = {
+  elderMaren: 'elderMaren',
+  mineForeman: 'mineForeman',
+  captainWren: 'captainWren',
+};
+
+function avatarForNode(node) {
+  if (!node) return null;
+  if (node.npcId && AVATAR_BY_NPC_ID[node.npcId]) return AVATAR_BY_NPC_ID[node.npcId];
+  if (node.id === 'banker') return 'banker';
+  if (node.id === 'shopkeeper') return 'shopkeeper';
+  if (node.id === 'fishmonger') return 'fishmonger';
+  if (node.id === 'wizard') return 'wizard';
+  if (node.type === 'townGuard') return 'guard';
+  if (node.type === 'citizen') return /-2$/.test(node.id || '') ? 'citizen2' : 'citizen';
+  return null;
+}
+
+function avatarForName(name) {
+  const byName = {
+    Banker: 'banker',
+    Shopkeeper: 'shopkeeper',
+    Fishmonger: 'fishmonger',
+    Wizard: 'wizard',
+    'Elder Maren': 'elderMaren',
+    'Mine Foreman': 'mineForeman',
+    'Captain Wren': 'captainWren',
+    Guard: 'guard',
+    Citizen: 'citizen',
+  };
+  return byName[name] || null;
+}
+
+function itemVisual(itemId, scene) {
+  if (!itemId || !ICONS[itemId]) return null;
+  const dataUrl = makeIcon(itemId, scene);
+  return dataUrl ? { dataUrl, textureKey: `dreamgame-item-${itemId}` } : null;
+}
+
+// Returns { dataUrl, textureKey } for the picture that should stand in
+// the world for a node, or null to keep the legacy lettered square.
+function worldVisualForNode(node, scene = null) {
+  if (!node) return null;
+  if (node.id === 'bank-chest') return makePixelArt(WORLD_ICONS.chest, 'world-chest', scene);
+  const avatarId = avatarForNode(node);
+  if (avatarId) return makePixelArt(AVATARS[avatarId], `avatar-${avatarId}`, scene);
+  if (node.type === 'ore') return itemVisual(node.itemId, scene);
+  if (node.type === 'marketStall') {
+    const stall = window.THIEVING_STALLS?.[node.stallId];
+    return itemVisual(stall?.itemId, scene);
+  }
+  if (node.type === 'agilityObstacle') {
+    if (node.id.includes('log')) return itemVisual('logs', scene);
+    if (node.id.includes('branch')) return makePixelArt(WORLD_ICONS.tree, 'world-tree', scene);
+    if (node.id.includes('net')) return makePixelArt(WORLD_ICONS.net, 'world-net', scene);
+    if (node.id.includes('stones')) return makePixelArt(WORLD_ICONS.stones, 'world-stones', scene);
+    if (node.id.includes('wall')) return makePixelArt(WORLD_ICONS.wall, 'world-wall', scene);
+    if (node.id.includes('rope')) return makePixelArt(WORLD_ICONS.rope, 'world-rope', scene);
+    return null;
+  }
+  if (node.type === 'tree' || node.type === 'oak') {
+    // Pre-register the stump so a depleted tree can swap its picture.
+    makePixelArt(WORLD_ICONS.stump, 'world-stump', scene);
+    const name = node.type === 'oak' ? 'oakTree' : 'tree';
+    return makePixelArt(WORLD_ICONS[name], `world-${name}`, scene);
+  }
+  const byType = {
+    fishing: 'fishingSpot',
+    range: 'range',
+    furnace: 'furnace',
+    anvil: 'anvil',
+    altar: 'altar',
+    runeAltar: 'runeAltar',
+    interiorDoor: 'door',
+    boat: 'boat',
+    shortcut: 'stile',
+  };
+  const worldName = byType[node.type];
+  if (worldName) return makePixelArt(WORLD_ICONS[worldName], `world-${worldName}`, scene);
+  return null;
+}
+
+window.SKILL_ICONS = SKILL_ICONS;
+window.AVATARS = AVATARS;
+window.WORLD_ICONS = WORLD_ICONS;
+window.makePixelArt = makePixelArt;
+window.createSkillIconElement = createSkillIconElement;
+window.createWorldIconElement = createWorldIconElement;
+window.createAvatarElement = createAvatarElement;
+window.avatarForNode = avatarForNode;
+window.avatarForName = avatarForName;
+window.worldVisualForNode = worldVisualForNode;
 
 function attachItemTooltip(element, itemId, context = '', quantity = 1) {
   const item = ITEMS[itemId];

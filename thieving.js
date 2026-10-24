@@ -158,11 +158,15 @@
       const result = addXp(character, 'thieving', stall.xp);
       showThievingXp(scene, result);
       if (node.remaining === 0) {
-        node.marker.setFillStyle(0x777777).setAlpha(0.6).disableInteractive();
+        if (node.marker.setFillStyle) node.marker.setFillStyle(0x777777);
+        else node.marker.setTint(0x777777);
+        node.marker.setAlpha(0.6).disableInteractive();
         scene.cancelNodeAction();
         scene.time.delayedCall(20000, () => {
           node.remaining = node.maxYield;
-          node.marker.setFillStyle(node.markerColor).setAlpha(1).setInteractive(
+          if (node.marker.setFillStyle) node.marker.setFillStyle(node.markerColor);
+          else node.marker.clearTint();
+          node.marker.setAlpha(1).setInteractive(
             new Phaser.Geom.Rectangle(-16, -16, 32, 32),
             Phaser.Geom.Rectangle.Contains,
           );
@@ -269,7 +273,7 @@
     const x = destination.x * 32 + 16;
     const y = destination.y * 32 + 16;
     scene.tweens.add({ targets: node.marker, x, y, duration: 350 });
-    scene.tweens.add({ targets: node.labelText, x, y, duration: 350 });
+    if (node.labelText) scene.tweens.add({ targets: node.labelText, x, y, duration: 350 });
   }
 
   window.createThievingNodes = createThievingNodes;

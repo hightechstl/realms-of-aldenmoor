@@ -329,6 +329,23 @@
           node.type === 'goblin' || node.type === 'farmAnimal'
           || node.type === 'trainingTarget'
         ) return;
+        const x = node.x * TILE_SIZE + 16;
+        const y = node.y * TILE_SIZE + 16;
+        // Visual pass: nodes stand in the world as pictures — item
+        // sprites, world sprites, and NPC avatars — not lettered
+        // squares. The hover tooltip still names everything.
+        const visual = window.worldVisualForNode?.(node, this);
+        if (visual) {
+          const imageMarker = this.add.image(x, y, visual.textureKey)
+            .setDisplaySize(30, 30)
+            .setDepth(5)
+            .setInteractive(new Phaser.Geom.Rectangle(-16, -16, 32, 32), Phaser.Geom.Rectangle.Contains);
+          node.marker = imageMarker;
+          node.markerTextureKey = visual.textureKey;
+          node.labelText = null;
+          this.nodeObjects.set(imageMarker, node);
+          return;
+        }
         const color = node.type === 'ore'
           ? (node.itemId === 'runeEssence' ? 0x9fd8e8 : node.itemId === 'copperOre' ? 0xb76b43 : node.itemId === 'coal' ? 0x2b2b30 : 0x9aa5aa)
           : node.type === 'tree' || node.type === 'oak'
@@ -338,8 +355,6 @@
                 : node.type === 'furnace' ? 0x8b5e45
                   : node.type === 'questNpc' ? 0x9b7544
                     : node.markerColor || 0xc57c46;
-        const x = node.x * TILE_SIZE + 16;
-        const y = node.y * TILE_SIZE + 16;
         const marker = this.add.rectangle(x, y, 26, 26, color, 1)
           .setStrokeStyle(2, 0xe6d1a2)
           .setDepth(5)
@@ -845,24 +860,40 @@
     }
 
     depleteNode(node) {
-      node.marker.setFillStyle(0x777777);
+      const isImage = !node.marker.setFillStyle;
+      if (isImage) {
+        // Pictures deplete visually: trees become stumps, everything
+        // else goes grey until it respawns.
+        if ((node.type === 'tree' || node.type === 'oak') && this.textures.exists('dreamgame-world-stump')) {
+          node.marker.setTexture('dreamgame-world-stump');
+        } else {
+          node.marker.setTint(0x777777);
+        }
+      } else {
+        node.marker.setFillStyle(0x777777);
+        if (node.type === 'tree' || node.type === 'oak') node.marker.setFillStyle(0x765333);
+      }
       node.marker.setAlpha(0.6);
       node.marker.disableInteractive();
-      if (node.type === 'tree' || node.type === 'oak') {
-        node.marker.setFillStyle(0x765333);
+      if (!isImage && node.labelText && (node.type === 'tree' || node.type === 'oak')) {
         node.labelText.setText('Stump');
       }
       if (this.currentAction === node) this.cancelNodeAction();
       const respawnDelay = node.type === 'ore' ? 4000 : 12000;
       this.time.delayedCall(respawnDelay, () => {
         node.remaining = node.maxYield;
-        node.marker.setFillStyle(node.type === 'oak' ? 0x8a6a3d : 0x4b8c48);
-        if (node.type === 'ore') {
-          node.marker.setFillStyle(node.itemId === 'runeEssence' ? 0x9fd8e8 : node.itemId === 'copperOre' ? 0xb76b43 : node.itemId === 'coal' ? 0x2b2b30 : 0x9aa5aa);
+        if (isImage) {
+          if (node.markerTextureKey) node.marker.setTexture(node.markerTextureKey);
+          node.marker.clearTint();
+        } else {
+          node.marker.setFillStyle(node.type === 'oak' ? 0x8a6a3d : 0x4b8c48);
+          if (node.type === 'ore') {
+            node.marker.setFillStyle(node.itemId === 'runeEssence' ? 0x9fd8e8 : node.itemId === 'copperOre' ? 0xb76b43 : node.itemId === 'coal' ? 0x2b2b30 : 0x9aa5aa);
+          }
+          if (node.type === 'fishing') node.marker.setFillStyle(0x4b9fc0);
         }
-        if (node.type === 'fishing') node.marker.setFillStyle(0x4b9fc0);
         node.marker.setAlpha(1);
-        node.labelText.setText(node.label);
+        if (node.labelText) node.labelText.setText(node.label);
         node.marker.setInteractive(
           new Phaser.Geom.Rectangle(-16, -16, 32, 32),
           Phaser.Geom.Rectangle.Contains,
@@ -922,7 +953,7 @@
       this.characterLabel = this.add.text(
         this.player.x,
         this.player.y - 34,
-        `${character.name}\n${RACES[character.raceId].name} · ${CLASSES[character.classId].name}`,
+        character.name,
         {
           fontFamily: 'sans-serif',
           fontSize: '12px',
@@ -1251,14 +1282,12 @@
       const cell = document.createElement('div');
       cell.className = 'skill-cell';
       cell.dataset.skill = skill;
-      const name = document.createElement('span');
-      name.className = 'skill-name';
-      name.textContent = formatSkill(skill);
+      const icon = window.createSkillIconElement?.(skill);
+      if (icon) cell.append(icon);
       const level = document.createElement('span');
       level.className = 'skill-level';
-      const xp = document.createElement('span');
-      xp.className = 'skill-xp';
-      cell.append(name, level, xp);
+      cell.append(level);
+      cell.setAttribute('aria-label', formatSkill(skill));
       grid.append(cell);
     });
     panel.append(grid);
@@ -1450,7 +1479,7 @@
       totalLevel += level;
       const cell = panel.querySelector(`[data-skill="${skill}"]`);
       cell.querySelector('.skill-level').textContent = level;
-      cell.querySelector('.skill-xp').textContent = `${xp.toLocaleString()} XP`;
+      cell.title = `${formatSkill(skill)} · ${xp.toLocaleString()} XP`;
     });
     panel.querySelector('.total-level').textContent = totalLevel.toLocaleString();
   }
@@ -1727,6 +1756,19 @@
       grid.append(card);
     });
   }
+
+  // Visual pass: an icon over every sidebar tab.
+  const tabVisuals = {
+    skills: window.createSkillIconElement?.('attack', 'tab-icon'),
+    inventory: window.createWorldIconElement?.('backpack', 'tab-icon'),
+    quests: window.createWorldIconElement?.('scroll', 'tab-icon'),
+    equipment: window.createSkillIconElement?.('defence', 'tab-icon'),
+    spellbook: window.createSkillIconElement?.('magic', 'tab-icon'),
+  };
+  Object.entries(tabVisuals).forEach(([tabName, icon]) => {
+    const tab = document.querySelector(`#${tabName}-tab`);
+    if (tab && icon) tab.prepend(icon);
+  });
 
   document.querySelectorAll('.sidebar-tab').forEach((tab) => {
     tab.addEventListener('click', () => {

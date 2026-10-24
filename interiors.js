@@ -168,14 +168,7 @@
       scene.grid[y][x] = 'interior-wall';
       scene.blocked[y][x] = true;
       scene.add.image(x * 32 + 16, y * 32 + 16, 'interior-wall').setDepth(2);
-      scene.add.text(x * 32 + 16, y * 32 + 16, 'COUNTER', {
-        fontFamily: 'sans-serif',
-        fontSize: '6px',
-        fontStyle: 'bold',
-        color: '#f4d49b',
-        stroke: '#28211b',
-        strokeThickness: 2,
-      }).setOrigin(0.5).setDepth(3);
+      // Visual pass: the counter is plain wood now — no word painted on it.
     }
     nodes.push({
       id: 'shopkeeper',

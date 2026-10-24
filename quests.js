@@ -110,11 +110,11 @@
   }
 
   const JOURNAL_QUESTS = [
-    { key: 'firstErrand', name: 'First Errand', status: firstErrandStatus },
-    { key: 'goblinTrouble', name: 'Goblin Trouble', status: goblinTroubleStatus },
-    { key: 'feedingVillage', name: 'Feeding the Village', status: feedingVillageStatus },
-    { key: 'ironForDepths', name: 'Iron for the Depths', status: ironForDepthsStatus },
-    { key: 'beastWastes', name: 'The Beast of the Wastes', status: beastWastesStatus },
+    { key: 'firstErrand', name: 'First Errand', status: firstErrandStatus, icon: ['item', 'parcel'] },
+    { key: 'goblinTrouble', name: 'Goblin Trouble', status: goblinTroubleStatus, icon: ['skill', 'attack'] },
+    { key: 'feedingVillage', name: 'Feeding the Village', status: feedingVillageStatus, icon: ['item', 'rawTrout'] },
+    { key: 'ironForDepths', name: 'Iron for the Depths', status: ironForDepthsStatus, icon: ['item', 'ironBar'] },
+    { key: 'beastWastes', name: 'The Beast of the Wastes', status: beastWastesStatus, icon: ['item', 'emberfangPelt'] },
   ];
 
   function createQuestJournal(character) {
@@ -128,12 +128,23 @@
     JOURNAL_QUESTS.forEach((quest) => {
       const entry = document.createElement('section');
       entry.className = 'quest-entry';
+      const head = document.createElement('div');
+      head.className = 'quest-head';
+      const [iconKind, iconId] = quest.icon || [];
+      const icon = iconKind === 'skill'
+        ? window.createSkillIconElement?.(iconId, 'quest-icon')
+        : window.createItemIconElement?.(iconId, 'quest-icon');
+      if (icon) head.append(icon);
       const name = document.createElement('h3');
       name.textContent = quest.name;
+      const state = document.createElement('span');
+      state.className = 'quest-state';
+      state.dataset.questState = quest.key;
+      head.append(name, state);
       const status = document.createElement('p');
       status.className = 'quest-status';
       status.dataset.quest = quest.key;
-      entry.append(name, status);
+      entry.append(head, status);
       panel.append(entry);
     });
     refreshQuestJournal(character);
@@ -146,6 +157,12 @@
       if (!status) return;
       status.textContent = quest.status(character);
       status.classList.toggle('quest-complete', stageOf(character, quest.key) === 2);
+      const state = document.querySelector(`[data-quest-state="${quest.key}"]`);
+      if (state) {
+        const stage = stageOf(character, quest.key);
+        state.textContent = stage === 2 ? '✓' : stage === 1 ? '▶' : '○';
+        state.className = `quest-state ${stage === 2 ? 'quest-state-complete' : stage === 1 ? 'quest-state-active' : 'quest-state-locked'}`;
+      }
     });
   }
 

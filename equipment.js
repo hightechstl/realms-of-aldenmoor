@@ -128,6 +128,8 @@
     card.type = 'button';
     card.className = `spell-card${windStrikeSelected ? ' active' : ''}`;
     card.setAttribute('aria-pressed', String(windStrikeSelected));
+    const spellIcon = window.createSkillIconElement?.('magic', 'quest-icon');
+    if (spellIcon) card.append(spellIcon);
     const title = document.createElement('strong');
     title.textContent = 'WIND STRIKE';
     const requirement = document.createElement('span');

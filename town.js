@@ -110,6 +110,11 @@
     close.className = 'town-close';
     close.textContent = 'Close';
     close.addEventListener('click', closeTownInterface);
+    const npcAvatarId = activeView !== 'dialogue' ? window.avatarForNode?.(activeNpc) : null;
+    if (npcAvatarId) {
+      const avatar = window.createAvatarElement?.(npcAvatarId, 'panel-avatar');
+      if (avatar) title.prepend(avatar);
+    }
     header.append(title, close);
     activePanel.append(header);
 
@@ -142,9 +147,17 @@
   function renderDialogue() {
     const dialogue = activeDialogue;
     if (!dialogue) return;
+    const head = document.createElement('div');
+    head.className = 'dialogue-head';
+    const avatarId = window.avatarForName?.(dialogue.speaker);
+    if (avatarId) {
+      const avatar = window.createAvatarElement?.(avatarId);
+      if (avatar) head.append(avatar);
+    }
     const speaker = document.createElement('h3');
     speaker.className = 'dialogue-speaker';
     speaker.textContent = dialogue.speaker;
+    head.append(speaker);
     const text = document.createElement('p');
     text.className = 'town-note dialogue-text';
     text.textContent = dialogue.lines[dialogue.index].text;
@@ -163,7 +176,7 @@
         renderPanel(activeCharacter);
       }
     });
-    activePanel.append(speaker, text, next);
+    activePanel.append(head, text, next);
   }
 
   function renderBank(character) {

@@ -250,8 +250,13 @@
       }
 
       .sidebar-tab {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
         min-width: 0;
-        padding: 0 2px;
+        padding: 3px 2px 0;
         border: 0;
         border-bottom: 3px solid transparent;
         background: transparent;
@@ -472,6 +477,93 @@
         text-decoration: line-through;
       }
 
+      .tab-icon {
+        width: 20px;
+        height: 20px;
+        image-rendering: pixelated;
+      }
+
+      .hp-icon {
+        width: 18px;
+        height: 18px;
+        margin-right: 6px;
+        image-rendering: pixelated;
+        vertical-align: -4px;
+      }
+
+      .skill-icon {
+        width: 30px;
+        height: 30px;
+        flex: 0 0 auto;
+        image-rendering: pixelated;
+      }
+
+      .dialogue-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+
+      .dialogue-head .dialogue-speaker {
+        margin: 0;
+      }
+
+      .dialogue-avatar {
+        width: 42px;
+        height: 42px;
+        border: 1px solid #ffffff30;
+        border-radius: 6px;
+        background: #313941;
+        image-rendering: pixelated;
+      }
+
+      .panel-avatar {
+        width: 30px;
+        height: 30px;
+        margin-right: 8px;
+        border-radius: 5px;
+        background: #313941;
+        image-rendering: pixelated;
+        vertical-align: -9px;
+      }
+
+      .quest-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .quest-head h3 {
+        margin: 0;
+      }
+
+      .quest-icon {
+        width: 26px;
+        height: 26px;
+        flex: 0 0 auto;
+        image-rendering: pixelated;
+      }
+
+      .quest-state {
+        margin-left: auto;
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .quest-state-active {
+        color: #f0c77f;
+      }
+
+      .quest-state-complete {
+        color: #53bd65;
+      }
+
+      .quest-state-locked {
+        color: #77807f;
+      }
+
       .dialogue-text {
         min-height: 76px;
         margin: 16px 0;
@@ -667,6 +759,9 @@
       }
 
       .skill-cell {
+        display: flex;
+        align-items: center;
+        gap: 8px;
         min-width: 0;
         padding: 5px 7px;
         border: 1px solid #ffffff18;
@@ -853,7 +948,7 @@
           <div><strong>Long-press</strong> an item — see its name</div>
         </div>
         <button class="title-enter" id="title-enter" type="button">Enter Aldenmoor</button>
-        <div class="title-footer">Version 1.1 · The Ashen Wastes · Best in landscape on mobile</div>
+        <div class="title-footer">Version 1.2 · A New Look · Best in landscape on mobile</div>
       </div>
       <div id="game-column">
         <div id="game" aria-label="Realms of Aldenmoor game world"></div>

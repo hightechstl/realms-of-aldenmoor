@@ -47,7 +47,10 @@
     const label = document.querySelector('#hp-label');
     const fill = document.querySelector('#hp-bar-fill');
     if (!label || !fill) return;
-    label.textContent = `Hitpoints ${current}/${maximum}`;
+    label.replaceChildren();
+    const hpIcon = window.createSkillIconElement?.('hitpoints', 'hp-icon');
+    if (hpIcon) label.append(hpIcon);
+    label.append(document.createTextNode(`Hitpoints ${current}/${maximum}`));
     const ratio = maximum === 0 ? 0 : current / maximum;
     fill.style.width = `${ratio * 100}%`;
     const red = Math.round(205 * (1 - ratio));
