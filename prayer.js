@@ -11,12 +11,27 @@
     for (let index = 0; index < amount; index += 1) {
       window.handlePrayerXp?.(addXp(character, 'prayer', 4.5));
     }
+    const maxPoints = maxPrayerPoints(character);
+    const beforePoints = normalizePrayerPoints(character);
+    character.prayerPoints = Math.min(maxPoints, beforePoints + amount * 2);
+    const restored = character.prayerPoints - beforePoints;
+    saveCharacter(character);
     window.sfx?.('pray');
     window.addGameMessage?.(buryAll ? `You bury ${amount} bones.` : 'You bury the bones.');
+    if (restored > 0) {
+      window.addGameMessage?.(`The burial restores ${restored} prayer point${restored === 1 ? '' : 's'}.`);
+    }
     return true;
   }
 
   function startPrayerOffering(scene, node, character) {
+    const maxPoints = maxPrayerPoints(character);
+    if (normalizePrayerPoints(character) < maxPoints) {
+      character.prayerPoints = maxPoints;
+      saveCharacter(character);
+      window.sfx?.('pray');
+      window.addGameMessage?.(`You pray at the altar. Your prayer points are fully restored (${maxPoints}).`);
+    }
     if (countItem(character, 'bones') < 1) {
       window.addGameMessage?.('You pray at the altar. Offer bones here for bonus Prayer XP.');
       scene.cancelNodeAction();

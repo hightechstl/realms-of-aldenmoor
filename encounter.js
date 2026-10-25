@@ -129,6 +129,7 @@
       turn: 1,
       abilityCooldown: 0,
       windCooldown: 0,
+      prayers: new Set(),
       xp: {},
       lines: [],
       timers: [],
@@ -200,6 +201,13 @@
     state.el.bagBtn = bagBtn;
     state.el.fleeBtn = fleeBtn;
 
+    const prayerBar = makeEl('div', 'encounter-prayer');
+    const prayerLabel = makeEl('div', 'encounter-prayer-label', '');
+    const prayerChips = makeEl('div', 'encounter-prayer-chips');
+    prayerBar.append(prayerLabel, prayerChips);
+    state.el.prayerLabel = prayerLabel;
+    state.el.prayerChips = prayerChips;
+
     const bag = makeEl('div', 'encounter-bag');
     bag.style.display = 'none';
     state.el.bag = bag;
@@ -208,7 +216,7 @@
     result.style.display = 'none';
     state.el.result = result;
 
-    overlay.append(head, arena, log, menu, bag, result);
+    overlay.append(head, arena, log, menu, prayerBar, bag, result);
     gameHost.append(overlay);
     state.el.overlay = overlay;
   }
@@ -337,6 +345,51 @@
     state.el.fleeBtn.textContent = BOSS_IDS.has(node.monsterId) ? 'Flee · 50%' : 'Flee · 80%';
     state.el.fleeBtn.disabled = busy;
     if (state.bagOpen) renderBag(state);
+    renderPrayers(state);
+  }
+
+  function renderPrayers(state) {
+    const { character } = state;
+    if (!state.el.prayerChips || typeof PRAYERS === 'undefined') return;
+    const max = maxPrayerPoints(character);
+    const points = normalizePrayerPoints(character);
+    character.prayerPoints = points;
+    state.el.prayerLabel.textContent = `✦ Prayer ${points} / ${max} — toggles are free, they drain each round`;
+    const busy = state.busy || state.over;
+    const level = levelForXp(character.skills.prayer.xp);
+    const chips = Object.entries(PRAYERS).map(([id, prayer]) => {
+      const locked = level < prayer.level;
+      const active = state.prayers.has(id);
+      const chip = makeEl(
+        'button',
+        active ? 'encounter-chip encounter-chip-on' : 'encounter-chip',
+        locked ? `${prayer.name} · Prayer ${prayer.level}` : `${prayer.name} · drain ${prayer.drain}`,
+      );
+      chip.type = 'button';
+      chip.title = prayer.desc;
+      chip.disabled = busy || locked || (!active && points <= 0);
+      chip.addEventListener('click', () => {
+        if (chip.disabled || state.busy || state.over) return;
+        togglePrayer(state, id);
+      });
+      return chip;
+    });
+    state.el.prayerChips.replaceChildren(...chips);
+  }
+
+  function togglePrayer(state, id) {
+    const prayer = PRAYERS[id];
+    if (!prayer) return;
+    if (state.prayers.has(id)) {
+      state.prayers.delete(id);
+      logLine(state, `${prayer.name} fades.`);
+    } else {
+      if (prayer.excludes) state.prayers.delete(prayer.excludes);
+      state.prayers.add(id);
+      window.sfx?.('pray');
+      logLine(state, `${prayer.name} — ${prayer.desc}`);
+    }
+    render(state);
   }
 
   function renderFighter(fighter, hp, max) {
@@ -395,7 +448,8 @@
       attackBonus: 0, strengthBonus: 0, defenceBonus: 0, rangedBonus: 0, magicBonus: 0,
     };
     const powerMods = isAbility ? equippedModSet(character, 'power') : new Set();
-    const accBonus = ability ? ability.accuracy * (powerMods.has('precise') ? 2 : 1) : 0;
+    const accBonus = (ability ? ability.accuracy * (powerMods.has('precise') ? 2 : 1) : 0)
+      + (state.prayers.has('vigor') ? 3 : 0);
     const dmgBonus = ability ? ability.bonusDamage * (powerMods.has('heavy') ? 2 : 1) : 0;
     const targetDefence = isAbility && powerMods.has('piercing')
       ? Math.floor(monster.defence / 2)
@@ -450,6 +504,9 @@
     }
 
     let damage = strike();
+    if (damage > 0 && state.prayers.has('vigor')) {
+      damage = Math.max(damage + 1, Math.floor(damage * 1.25));
+    }
     if (isAbility && damage > 0 && powerMods.has('executioner')
       && node.hp <= Math.floor(node.maxHp * 0.3)) {
       damage = Math.ceil(damage * 1.5);
@@ -641,6 +698,8 @@
     if (hit) damage = roll(monster.maxHit);
     const guarded = state.guarding;
     if (guarded && damage > 0) damage = Math.floor(damage / 2);
+    if (damage > 0 && state.prayers.has('greaterWard')) damage = Math.floor(damage / 2);
+    else if (damage > 0 && state.prayers.has('ward')) damage = Math.floor(damage * 0.7);
     animateLunge(state, 'enemy');
     animateHit(state, 'player', damage);
     if (damage > 0) {
@@ -661,6 +720,12 @@
       return;
     }
 
+    if (applyRetribution(state, damage)) {
+      render(state);
+      later(state, 600, () => victory(state));
+      return;
+    }
+
     node.attackCount = (node.attackCount || 0) + 1;
     if (BOSS_IDS.has(node.monsterId) && node.attackCount % 3 === 0) {
       const breath = node.monsterId === 'emberfang' ? roll(2) + 2 : roll(2) + 3;
@@ -668,16 +733,24 @@
       // matching the overworld breath ranges (Between is inclusive).
       later(state, 550, () => {
         if (state.over) return;
+        let breathDamage = breath;
+        if (state.prayers.has('greaterWard')) breathDamage = Math.floor(breathDamage / 2);
+        else if (state.prayers.has('ward')) breathDamage = Math.floor(breathDamage * 0.7);
         window.sfx?.(node.monsterId === 'emberfang' ? 'firebreath' : 'splash');
-        animateHit(state, 'player', breath);
-        character.currentHp = Math.max(0, character.currentHp - breath);
+        animateHit(state, 'player', breathDamage);
+        character.currentHp = Math.max(0, character.currentHp - breathDamage);
         refreshHealth(character);
         logLine(state, node.monsterId === 'emberfang'
-          ? `Emberfang rears back and breathes fire for ${breath}!`
-          : `Stormmaw unleashes a crashing tempest wave for ${breath}!`);
+          ? `Emberfang rears back and breathes fire for ${breathDamage}!`
+          : `Stormmaw unleashes a crashing tempest wave for ${breathDamage}!`);
         render(state);
         if (character.currentHp <= 0) {
           later(state, 750, () => defeat(state));
+          return;
+        }
+        if (applyRetribution(state, breathDamage)) {
+          render(state);
+          later(state, 600, () => victory(state));
           return;
         }
         endMonsterTurn(state);
@@ -687,7 +760,45 @@
     endMonsterTurn(state);
   }
 
+  function applyRetribution(state, taken) {
+    const { node, monster } = state;
+    if (taken <= 0 || !state.prayers.has('retribution') || node.hp <= 0) return false;
+    const reflected = Math.max(1, Math.floor(taken * 0.25));
+    node.hp = Math.max(0, node.hp - reflected);
+    logLine(state, `Retribution! ${reflected} damage is reflected back at the ${monster.name}!`);
+    animateHit(state, 'enemy', reflected);
+    return node.hp <= 0;
+  }
+
+  function tickPrayerEffects(state) {
+    const { character } = state;
+    if (state.prayers.size === 0) return;
+    if (state.prayers.has('renewal') && character.currentHp > 0) {
+      const max = maxHitpoints(character);
+      if (character.currentHp < max) {
+        const healed = Math.min(2, max - character.currentHp);
+        character.currentHp += healed;
+        refreshHealth(character);
+        logLine(state, `Renewal restores ${healed} HP.`);
+      }
+    }
+    let total = 0;
+    state.prayers.forEach((id) => { total += PRAYERS[id]?.drain || 0; });
+    if (character.classId === 'acolyte') total = Math.ceil(total / 2);
+    if (total <= 0) return;
+    const points = normalizePrayerPoints(character);
+    const paid = Math.min(points, total);
+    character.prayerPoints = points - paid;
+    if (paid > 0) grantXp(state, 'prayer', paid);
+    saveCharacter(character);
+    if (character.prayerPoints <= 0) {
+      state.prayers.clear();
+      logLine(state, 'Your prayer points are spent — your prayers fade!');
+    }
+  }
+
   function endMonsterTurn(state) {
+    tickPrayerEffects(state);
     state.turn += 1;
     if (state.abilityCooldown > 0) state.abilityCooldown -= 1;
     if (state.windCooldown > 0) state.windCooldown -= 1;

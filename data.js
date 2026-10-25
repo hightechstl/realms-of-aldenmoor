@@ -892,6 +892,14 @@ const SMITHING_RECIPES = {
   mithrilPlatebody: { bars: 5, level: 57, xpPerBar: 40, barId: 'mithrilBar' },
 };
 
+const PRAYERS = {
+  ward: { name: 'Ward', level: 10, drain: 1, excludes: 'greaterWard', desc: 'Reduces all damage you take by 30% — including boss breath.' },
+  vigor: { name: 'Vigor', level: 20, drain: 1, desc: '+3 accuracy and +25% damage on all your attacks.' },
+  greaterWard: { name: 'Greater Ward', level: 30, drain: 2, excludes: 'ward', desc: 'Halves all damage you take — including boss breath. Replaces Ward.' },
+  retribution: { name: 'Retribution', level: 40, drain: 2, desc: 'Reflects 25% of the damage you take back at your attacker.' },
+  renewal: { name: 'Renewal', level: 50, drain: 3, desc: 'Regenerates 2 HP every round.' },
+};
+
 const ABILITY_MODS = {
   power: {
     tiers: {

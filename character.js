@@ -96,6 +96,7 @@ function createCharacter(name, raceId, classId) {
       heal: { tier1: null, tier2: null, tier3: null },
     },
     starterCoinsGranted: true,
+    prayerPoints: levelForXp(skills.prayer.xp),
     saveVersion: 1,
   };
 }
@@ -113,6 +114,7 @@ function saveCharacter(character) {
   character.bank = store.sharedBank;
   character.quests = normalizeQuests(character.quests);
   character.abilityMods = normalizeAbilityMods(character.abilityMods);
+  character.prayerPoints = normalizePrayerPoints(character);
   character.saveVersion = 1;
   const slotCharacter = { ...character };
   delete slotCharacter.bank;
@@ -163,6 +165,20 @@ function normalizeQuests(quests) {
     stormmawSlain: quests?.stormmawSlain === true,
   };
 }
+
+function maxPrayerPoints(character) {
+  return levelForXp(character?.skills?.prayer?.xp || 0);
+}
+
+function normalizePrayerPoints(character) {
+  const max = maxPrayerPoints(character);
+  const current = character?.prayerPoints;
+  if (!Number.isFinite(current)) return max;
+  return Math.max(0, Math.min(max, Math.floor(current)));
+}
+
+window.maxPrayerPoints = maxPrayerPoints;
+window.normalizePrayerPoints = normalizePrayerPoints;
 
 function normalizeAbilityMods(mods) {
   const clean = {
@@ -270,6 +286,11 @@ function loadCharacter() {
   const abilityMods = normalizeAbilityMods(character.abilityMods);
   if (JSON.stringify(character.abilityMods) !== JSON.stringify(abilityMods)) {
     character.abilityMods = abilityMods;
+    migrated = true;
+  }
+  const prayerPoints = normalizePrayerPoints(character);
+  if (character.prayerPoints !== prayerPoints) {
+    character.prayerPoints = prayerPoints;
     migrated = true;
   }
   if (character.starterCoinsGranted !== true && !Number.isInteger(character.starterCoinsPending)) {
@@ -428,6 +449,7 @@ function sanitizeImportedSlot(slot) {
     const maxHp = levelForXp(skills.hitpoints.xp);
     clean.currentHp = Math.max(1, Math.min(maxHp, Math.floor(slot.currentHp)));
   }
+  clean.prayerPoints = normalizePrayerPoints({ skills, prayerPoints: slot.prayerPoints });
   return clean;
 }
 
