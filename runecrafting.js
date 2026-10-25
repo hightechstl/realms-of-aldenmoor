@@ -8,8 +8,12 @@
     return 1 + Math.floor(runecraftingLevel / RUNE_RECIPES[runeId].multiplierEvery);
   }
 
+  let activeRunecraftingPanel = null;
+
   function openRunecraftingPanel(character, node) {
     window.closeTownInterface?.();
+    window.closeSmithingPanel?.();
+    if (activeRunecraftingPanel) activeRunecraftingPanel.close();
     document.querySelector('.runecrafting-panel')?.remove();
     document.querySelector('.smithing-panel')?.remove();
     const sidebar = document.querySelector('#sidebar');
@@ -28,6 +32,7 @@
     sidebar.insertBefore(panel, document.querySelector('#sidebar-footer'));
 
     function close() {
+      if (activeRunecraftingPanel && activeRunecraftingPanel.close === close) activeRunecraftingPanel = null;
       panel.remove();
       tabs.hidden = false;
       ['skills', 'inventory', 'quests', 'equipment', 'spellbook'].forEach((name) => {
@@ -35,6 +40,10 @@
         document.querySelector(`#${name}-tab`).setAttribute('aria-selected', String(name === savedTab));
       });
     }
+    activeRunecraftingPanel = {
+      tile: { x: node.tile?.x ?? node.x, y: node.tile?.y ?? node.y },
+      close,
+    };
 
     function render() {
       panel.replaceChildren();
@@ -108,4 +117,13 @@
   }
 
   window.openRunecraftingPanel = openRunecraftingPanel;
+  window.updateRunecraftingDistance = (tile) => {
+    if (!activeRunecraftingPanel || !tile) return;
+    const distance = Math.abs(tile.x - activeRunecraftingPanel.tile.x)
+      + Math.abs(tile.y - activeRunecraftingPanel.tile.y);
+    if (distance > 2) activeRunecraftingPanel.close();
+  };
+  window.closeRunecraftingPanel = () => {
+    if (activeRunecraftingPanel) activeRunecraftingPanel.close();
+  };
 })();

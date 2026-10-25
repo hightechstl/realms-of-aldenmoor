@@ -1143,6 +1143,8 @@
       if (!this.player) return;
       if (this.encounterActive) return;
       window.updateTownDistance?.(this.currentTile);
+      window.updateSmithingDistance?.(this.currentTile);
+      window.updateRunecraftingDistance?.(this.currentTile);
       if (window.isPlayerStunned?.(this)) return;
       window.updateCombat?.(this);
       this.characterLabel.setPosition(this.player.x, this.player.y - 34);
@@ -1206,8 +1208,12 @@
     scene: GameScene,
   });
 
+  let activeSmithingPanel = null;
+
   function openSmithingPanel(character, anvil) {
     window.closeTownInterface?.();
+    window.closeRunecraftingPanel?.();
+    if (activeSmithingPanel) activeSmithingPanel.close();
     document.querySelector('.smithing-panel')?.remove();
     const sidebar = document.querySelector('#sidebar');
     const tabs = document.querySelector('.sidebar-tabs');
@@ -1225,6 +1231,7 @@
     sidebar.insertBefore(panel, document.querySelector('#sidebar-footer'));
 
     function close() {
+      if (activeSmithingPanel && activeSmithingPanel.close === close) activeSmithingPanel = null;
       panel.remove();
       tabs.hidden = false;
       ['skills', 'inventory', 'quests', 'equipment', 'spellbook', 'abilities'].forEach((name) => {
@@ -1232,6 +1239,10 @@
         document.querySelector(`#${name}-tab`).setAttribute('aria-selected', String(name === savedTab));
       });
     }
+    activeSmithingPanel = {
+      tile: { x: anvil.tile?.x ?? anvil.x, y: anvil.tile?.y ?? anvil.y },
+      close,
+    };
 
     function render() {
       panel.replaceChildren();
@@ -1323,6 +1334,16 @@
 
     render();
   }
+
+  window.updateSmithingDistance = (tile) => {
+    if (!activeSmithingPanel || !tile) return;
+    const distance = Math.abs(tile.x - activeSmithingPanel.tile.x)
+      + Math.abs(tile.y - activeSmithingPanel.tile.y);
+    if (distance > 2) activeSmithingPanel.close();
+  };
+  window.closeSmithingPanel = () => {
+    if (activeSmithingPanel) activeSmithingPanel.close();
+  };
 
   function createSkillsHud(character) {
     document.querySelector('.skills-hud')?.remove();
