@@ -1,7 +1,14 @@
 (() => {
   const EQUIPMENT_SLOTS = [
-    ['weapon', 'Weapon'],
-    ['shield', 'Shield'],
+    ['head', 'Helmet'],
+    ['neck', 'Amulet'],
+    ['weapon', 'Main hand'],
+    ['body', 'Body'],
+    ['shield', 'Off hand'],
+    ['legs', 'Legs'],
+    ['hands', 'Gloves'],
+    ['feet', 'Boots'],
+    ['ring', 'Ring'],
     ['ammo', 'Ammo'],
   ];
   const COMBAT_STYLES = [
@@ -26,7 +33,7 @@
       magicBonus: 0,
     };
     const equipment = window.normalizeEquipment?.(character.equipment) || character.equipment;
-    ['weapon', 'shield'].forEach((slot) => {
+    ['weapon', 'shield', 'head', 'body', 'legs', 'feet', 'hands', 'neck', 'ring'].forEach((slot) => {
       const itemId = equipment?.[slot];
       const bonuses = ITEMS[itemId]?.equip;
       if (!bonuses) return;

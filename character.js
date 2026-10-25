@@ -182,8 +182,8 @@ function normalizeAbilityMods(mods) {
 }
 
 function normalizeEquipment(equipment) {
-  const normalized = { weapon: null, shield: null, ammo: null };
-  ['weapon', 'shield'].forEach((slot) => {
+  const normalized = { weapon: null, shield: null, ammo: null, head: null, body: null, legs: null, feet: null, hands: null, neck: null, ring: null };
+  ['weapon', 'shield', 'head', 'body', 'legs', 'feet', 'hands', 'neck', 'ring'].forEach((slot) => {
     const itemId = equipment?.[slot];
     if (itemId && ITEMS[itemId]?.equip?.slot === slot) normalized[slot] = itemId;
   });
